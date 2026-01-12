@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUMEX</title>
+    <link rel="stylesheet" href="build/css/app.css">
+</head>
+
+<body>
+    <!--Encabezado -->
+    <header class="header inicio"> 
+        <div class= "derecha">
+            <div class="row" style="gap:8px">
+            
+                <div id="OptionSesionBar">
+                    <button class="boton-amarillo-block" id="seedBtn">Iniciar Sesion</button>
+                </div>
+
+                <div id="CrearSesionBar">
+                    <button class="boton-amarillo-block" id="RegistrarBtn">Crear Cuenta</button>
+                </div>
+
+                <!-- TARJETA DE PERFIL (ESTÁ OCULTA AL INICIO) -->
+                <div id="ProfileCard" class="row" style="align-items:center; gap:8px; display:none;">
+                    <img id="ProfileAvatar" src="build/img/PERFIL.jpg"
+                        style="width:40px;height:40px;border-radius:50%;border:2px solid white;">
+                    <div style="display:flex; flex-direction:column; line-height:1;">
+                    <span id="ProfileName" style="font-size:14px;font-weight:bold;">Usuario</span>
+                    <span id="ProfileRole" style="font-size:12px;" class="muted">Rol</span>
+                    </div>
+                </div>
+
+                <div id="CloseSesionBar">
+                    <button class="boton-amarillo-block" id="CloseBtn">Cerrar Sesion</button>
+                </div>
+            </div>
+        </div>
+
+        <div class= "derecha">
+            <div class="row" style="gap:8px">
+
+                <div id="OptionAdmin">
+                    <button 
+                        class="boton-amarillo-block" 
+                        id="OpAdminBtn"
+                        onclick= "window.location.href='admin.html'">
+                        Administrador
+                    </button>
+                </div>
+
+                <div id="OptionMisPedidos">
+                    <button 
+                        class="boton-amarillo-block" 
+                        id="OpMisPedidos"
+                        onclick= "window.location.href='pedidos.html'">
+                        Mis Pedidos
+                    </button>        
+                </div>
+            </div>
+        </div>
+
+        <div class="contenedor contenido-header">
+            <div class="barra">
+                <a href="/">
+                    <img src="build/img/yumexone.svg" alt="Logotipo de Bienes Raices">
+                </a>
+
+                <div class="mobile-menu">
+                    <img src="build/img/barras.svg" alt="icono menu responsive">
+                </div>
+
+                <div class="derecha">
+                    <img class="dark-mode-boton" src="build/img/dark-mode.svg">
+                    <nav class="navegacion">
+                        <a href="anuncio.html">Anuncios</a>
+                        <a href="menu.html">Menu</a>
+                        <a href="blog.html">Blog</a>
+                        <a href="contacto.html">Contacto</a>
+                    </nav>
+                </div>
+            </div> <!--.barra-->
+
+            <h1>Desayunos y un poco mas..</h1>
+        </div>
+    </header>
+
+
+    <!-- contenido -->
+    <main class="contenedor seccion">
+        <h1>Más Sobre Nosotros</h1>
+
+        <div class="iconos-nosotros">
+            <div class="icono">
+                <img src="build/img/icono2.svg" alt="Icono Precio" loading="lazy">
+                <h3>Precio</h3>
+                <p> Contamos con los mejores precios para ti.</p>
+            </div>
+            <div class="icono">
+                <img src="build/img/icono3.svg" alt="Icono Tiempo" loading="lazy">
+                <h3>A Tiempo</h3>
+                <p>tenemos todo a tu tiempo y disposicion, desde donde sea.</p>
+            </div>
+        </div>
+    </main>
+
+
+    <!-- MENU MUESTRA -->
+    <section class="seccion contenedor">
+        <h2>Nuestros Productos</h2>
+
+        <div class="contenedor-anuncios">
+            <div class="anuncio">
+                <picture>
+                    <source srcset="build/img/barbacoa.webp" type="image/webp">
+                    <source srcset="build/img/barbacoa.jpg" type="image/jpeg">
+                    <img loading="lazy" src="build/img/barbacoa.jpg" alt="anuncio">
+                </picture>
+
+                <div class="contenido-anuncio">
+                    <h3>Barbacoa</h3>
+                    <p>Suave, jugosa y con auténtico sabor tradicional, perfecta para comenzar el día con energía.</p>
+                    <p class="precio">$80.00</p>
+
+                    <a href="menu.html" class="boton-amarillo-block">
+                        Comprar
+                    </a>
+                </div><!--.contenido-anuncio-->
+            </div><!--anuncio-->
+
+            <div class="anuncio">
+                <picture>
+                    <source srcset="build/img/huevos.webp" type="image/webp">
+                    <source srcset="build/img/huevos.jpg" type="image/jpeg">
+                    <img loading="lazy" src="build/img/huevos.jpg" alt="anuncio">
+                </picture>
+
+                <div class="contenido-anuncio">
+                    <h3>Huevos Revueltos</h3>
+                    <p>Clásicos, esponjosos y recién preparados, ideales para un desayuno rápido y delicioso.</p>
+                    <p class="precio">$80.00</p>
+
+                    <a href="menu.html" class="boton-amarillo-block">
+                        Comprar
+                    </a>
+                </div><!--.contenido-anuncio-->
+            </div><!--anuncio-->
+
+            <div class="anuncio">
+                <picture>
+                    <source srcset="build/img/flautasah.webp" type="image/webp">
+                    <source srcset="build/img/flautasah.jpg" type="image/jpeg">
+                    <img loading="lazy" src="build/img/flautasah.jpg" alt="anuncio">
+                </picture>
+
+                <div class="contenido-anuncio">
+                    <h3>Flautas Ahogadas</h3>
+                    <p>Crocantes por fuera, bañadas en salsa y acompañadas de crema y queso para un antojo irresistible.</p>
+                    <p class="precio">$80.00</p>
+
+                    <a href="menu.html" class="boton-amarillo-block">
+                        Comprar
+                    </a>
+                </div><!--.contenido-anuncio-->
+            </div><!--anuncio-->
+
+        </div> <!--.contenedor-anuncios-->
+
+        <div class="alinear-derecha">
+            <a href="menu.html" class="boton-verde">Ver Todas</a>
+        </div>
+    </section>
+
+    <section class="imagen-contacto">
+        <h2>Encuentra tu desayuno</h2>
+        <p>Llena el formulario de contacto</p>
+        <a href="contacto.html" class="boton-amarillo">Contactános</a>
+    </section>
+
+    <div class="contenedor seccion seccion-inferior">
+        <section class="blog">
+            <h3>Nuestro Blog</h3>
+
+            <article class="entrada-blog">
+                <div class="imagen">
+                    <picture>
+                        <source srcset="build/img/comida.webp" type="image/webp">
+                        <source srcset="build/img/comida.jpg" type="image/jpeg">
+                        <img loading="lazy" src="build/img/comida.jpg" alt="Texto Entrada Blog">
+                    </picture>
+                </div>
+
+                <div class="texto-entrada">
+                    <a href="entrada.html">
+                        <h4>Tacos Nuevo producto.</h4>
+                        <p class="informacion-meta">Escrito el: <span>20/10/2021</span> por: <span>Admin</span> </p>
+
+                        <p>
+                            Deliciosos tacos preparados al momento, con tortilla calientita y rellenos de ingredientes 
+                            frescos y sazonados. Una opción clásica, rápida y llena de sabor mexicano para cualquier antojo.
+                        </p>
+                    </a>
+                </div>
+            </article>
+
+            <article class="entrada-blog">
+                <div class="imagen">
+                    <picture>
+                        <source srcset="build/img/enchiladas.webp" type="image/webp">
+                        <source srcset="build/img/enchiladas.jpg" type="image/jpeg">
+                        <img loading="lazy" src="build/img/enchiladas.jpg" alt="Texto Entrada Blog">
+                    </picture>
+                </div>
+
+                <div class="texto-entrada">
+                    <a href="entrada.html">
+                        <h4>Enchiladas</h4>
+                        <p class="informacion-meta">Escrito el: <span>20/10/2021</span> por: <span>Admin</span> </p>
+
+                        <p>
+                            Tortillas suaves rellenas y cubiertas de salsa, crema y queso, con el auténtico toque mexicano.
+                        </p>
+                    </a>
+                </div>
+            </article>
+        </section>
+
+        <section class="testimoniales">
+            <h3>Testimoniales</h3>
+
+            <div class="testimonial">
+                <blockquote>
+                    “Probé los desayunos de YUMEX y quedé encantado.
+                     La barbacoa está suavecita y con un sabor increíble, 
+                     los chilaquiles bien servidos y los molletes perfectos para
+                      empezar el día”.
+                </blockquote>
+                <p>- Polanco Montelongo </p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer seccion">
+        <div class="contenedor contenedor-footer">
+            <nav class="navegacion">
+                <a href="anuncio.html">Anuncios</a>
+                <a href="menu.html">Menu</a>
+                <a href="blog.html">Blog</a>
+                <a href="contacto.html">Contacto</a>
+            </nav>
+        </div>
+
+        <p class="copyright">Ingenieria web - MRLdGV Y EMA &copy;</p>
+    </footer>
+
+    <script src="build/js/bundle.min.js"></script>
+
+
+
+
+
+
+
+
+<!--Crear Cuenta-->
+<div class="modal" id="CrearCuenta">
+    <div class="modal-content">
+      
+        <h2>Crea una Cuenta</h2>
+
+        <h5>Ingresa tu Nombre</h5>
+        <input id="RegNombre" placeholder="Ingresa un Nombre">
+        
+        <h5>Ingresa un Correo valido</h5>
+        <input id="RegCorreo" placeholder="Ingresa un Correo">
+        
+        <h5>Ingresa una Contraseña que cumpla lo siguiente: 8 caracteres, 1 Mayuscula, 1 minuscula, 1 numero</h5>
+        <input id="RegContraseña" placeholder="Ingresa una Contraseña">
+
+        <button class="boton-amarillo-block" id="CrearCuentaBtn">Crear Cuenta</button>
+        
+        <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--muted);">
+        <button class="boton-amarillo-block" id="CerrarCrearBtn">Cerrar</button>
+        
+    </div>
+</div>
+
+
+
+
+<!--Inicio de sesion-->
+<div class="modall" id="InicioSesion">
+  <div class="modal-contentt">
+      <h3>Inicio de Sesión</h3>
+
+      <!-- Contenedor del input con icono -->
+      <div class="input-icon">
+        <i class="fas fa-envelope"></i>
+        <input id="InitCorreo" placeholder="Escribe tu correo" type="email">
+      </div>
+
+      <div class="input-icon">
+        <i class="fas fa-lock"></i>
+        <input id="InitContraseña" placeholder="Escribe tu contraseña" type="password">
+        <button type="button" class="btn-eye" onclick="togglePassword()">
+         <i class="fas fa-eye" id="eyeIcon"></i>
+          </button>
+        </div>
+
+
+      <button class="boton-amarillo-block" id="InitSesionBtn">Iniciar Sesión</button>
+      <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--muted);">
+      <button class="boton-amarillo-block" id="CloseSesionBtn">Cerrar</button>
+  </div>
+</div>
+
+
+
+<!-- Vinculación JS -->
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YUMEX</title>
+    <link rel="stylesheet" href="build/css/app.css">
+</head>
+<body>
+    
+    <header class="header">
+        <div class="derecha">
+            <div class="row" style="gap:8px">
+        
+            <div id="OptionSesionBar">
+                <button class="boton-amarillo-block" id="seedBtn">Iniciar Sesion</button>
+            </div>
+
+            <div id="CrearSesionBar">
+                <button class="boton-amarillo-block" id="RegistrarBtn">Crear Cuenta</button>
+            </div>
+
+            <!-- TARJETA DE PERFIL (ESTÁ OCULTA AL INICIO) -->
+            <div id="ProfileCard" class="row" style="align-items:center; gap:8px; display:none;">
+                <img id="ProfileAvatar" src="build/img/PERFIL.jpg"
+                    style="width:40px;height:40px;border-radius:50%;border:2px solid white;">
+                <div style="display:flex; flex-direction:column; line-height:1;">
+                <span id="ProfileName" style="font-size:14px;font-weight:bold;">Usuario</span>
+                <span id="ProfileRole" style="font-size:12px;" class="muted">Rol</span>
+                </div>
+            </div>
+
+            <div id="CloseSesionBar">
+            <button class="boton-amarillo-block" id="CloseBtn">Cerrar Sesion</button>
+            </div>
+            </div>
+        </div>
+
+        <div class= "derecha">
+            <div class="row" style="gap:8px">
+
+                <div id="OptionAdmin">
+                    <button class="boton-amarillo-block" id="OpAdminBtn"
+                        onclick="window.location.href='admin.html'">
+                        Administrador
+                    </button>
+                </div>
+
+                <div id="OptionMisPedidos">
+                    <button class="boton-amarillo-block" id="OpMisPedidos"
+                        onclick="window.location.href='pedidos.html'">
+                        Mis Pedidos
+                    </button>        
+                </div>
+            </div>
+        </div>
+
+        <div class="contenedor contenido-header">
+            <div class="barra">
+                <a href="/">
+                    <img src="build/img/yumexone.svg" alt="Logotipo de Bienes Raices">
+                </a>
+
+                <div class="mobile-menu">
+                    <img src="build/img/barras.svg" alt="icono menu responsive">
+                </div>
+
+                <div class="derecha">
+                    <img class="dark-mode-boton" src="build/img/dark-mode.svg">
+                    <nav class="navegacion">
+                        <a href="anuncio.html">Anuncios</a>
+                        <a href="menu.html">Menu</a>
+                        <a href="contacto.html">Contacto</a>
+                    </nav>
+                </div>
+                
+            </div> <!--.barra-->
+        </div>
+    </header>
+
+    <!-- entrada -->
+    <main class="contenedor seccion contenido-centrado">
+        <h1>Fundacion de nuestro negocio</h1>
+
+   
+        <picture>
+            <source srcset="build/img/fundacion.webp" type="image/webp">
+            <source srcset="build/img/fundacion.jpg" type="image/jpeg">
+            <img loading="lazy" src="build/img/fundacion.jpg" alt="imagen de la propiedad">
+        </picture>
+
+        <p class="informacion-meta">Escrito el: <span>20/10/2021</span> por: <span>Admin</span> </p>
+
+
+        <div class="resumen-propiedad">
+            <p>Somos Eduardo y Renata, fundadores de YUMEX, 
+                una iniciativa creada con pasión y compromiso. 
+                Nuestro objetivo es ofrecer Desayunos tipicos de nuestro pais, 
+                siempre con un enfoque en calidad, honestidad y atención cercana a 
+                nuestros clientes.</p>
+
+            <p>Hace 6 meses decidimos emprender este camino porque notamos una 
+                necesidad de hacer mas accesible la comida tipica de nuestro pais, basada en desayunos 
+                Motivados por nuestra pasión y ganas de hacer las cosas bien, fundamos 
+                YUMEX con la convicción de que era posible ofrecer calidad en cada platillo.</p>
+        </div>
+    </main>
+    <!-- blog -->
+    <main class="contenedor seccion contenido-centrado">
+        <h1>Nuestras sugerencias</h1>
+
+        <article class="entrada-blog">
+            <div class="imagen">
+                <picture>
+                    <source srcset="build/img/guia.webp" type="image/webp">
+                    <source srcset="build/img/guia.jpg" type="image/jpeg">
+                    <img loading="lazy" src="build/img/guia.jpg" alt="Texto Entrada Blog">
+                </picture>
+            </div>
+
+            <div class="texto-entrada">
+                    <h4>Cómo elegir el desayuno perfecto para tus reuniones familiares</h4>
+                    <p>Escrito el: <span>20/10/2021</span> por: <span>Admin</span> </p>
+
+                    <p>
+                        Descubre qué platillos funcionan mejor según el tipo de evento, 
+                        número de invitados y hora del día. Aprende por qué opciones como 
+                        barbacoa, chilaquiles o enchiladas pueden transformar una mañana 
+                        común en una experiencia deliciosa y práctica.
+                    </p>
+            </div>
+        </article>
+
+        <article class="entrada-blog">
+            <div class="imagen">
+                <picture>
+                    <source srcset="build/img/guiados.webp" type="image/webp">
+                    <source srcset="build/img/guiados.jpg" type="image/jpeg">
+                    <img loading="lazy" src="build/img/guiados.jpg" alt="Texto Entrada Blog">
+                </picture>
+            </div>
+
+            <div class="texto-entrada">
+                    <h4>La historia detrás de los desayunos mexicanos más populares</h4>
+                    <p>Escrito el: <span>20/10/2021</span> por: <span>Admin</span> </p>
+
+                    <p>
+                        Un recorrido rápido por el origen de clásicos como los molletes, 
+                        las flautas ahogadas y la barbacoa. 
+                        Conoce cómo surgieron estos platillos, qué los hace tan especiales 
+                        y por qué siguen siendo protagonistas en la mesa mexicana.
+                    </p>
+            </div>
+        </article>
+
+        <article class="entrada-blog">
+            <div class="imagen">
+                <picture>
+                    <source srcset="build/img/guiatres.webp" type="image/webp">
+                    <source srcset="build/img/guiatres.jpg" type="image/jpeg">
+                    <img loading="lazy" src="build/img/guiatres.jpg" alt="Texto Entrada Blog">
+                </picture>
+            </div>
+
+            <div class="texto-entrada">
+                    <h4>Consejos para acompañar tu desayuno con bebidas tradicionales</h4>
+                    <p>Escrito el: <span>20/10/2021</span> por: <span>Admin</span> </p>
+
+                    <p>
+                        Champurrado, café de olla, jugos naturales, atole de guayaba… 
+                        Aprende qué bebida combina mejor con cada platillo de tu menú y 
+                        cómo elevar cualquier desayuno con un maridaje perfecto.
+                    </p>
+            </div>
+        </article>
+
+        <article class="entrada-blog">
+            <div class="imagen">
+                <picture>
+                    <source srcset="build/img/guiacuatro.webp" type="image/webp">
+                    <source srcset="build/img/guiacuatro.jpg" type="image/jpeg">
+                    <img loading="lazy" src="build/img/guiacuatro.jpg" alt="Texto Entrada Blog">
+                </picture>
+            </div>
+
+            <div class="texto-entrada">
+                    <h4>Cómo preparar una mesa navideña sencilla pero espectacular</h4>
+                    <p>Escrito el: <span>20/10/2021</span> por: <span>Admin</span> </p>
+
+                    <p>
+                        Ideas rápidas para decorar, combinar colores, presentar tus alimentos y 
+                        darle un toque cálido y festivo a tu desayuno navideño. Incluye tips para 
+                        hacer que cualquier mesa luzca profesional sin gastar de más.
+                    </p>
+            </div>
+        </article>
+    </main>
+
+    <footer class="footer seccion">
+        <div class="contenedor contenedor-footer">
+            <nav class="navegacion">
+                <a href="anuncio.html">Anuncios</a>
+                <a href="menu.html">Menu</a>
+                <a href="contacto.html">Contacto</a>
+            </nav>
+        </div>
+
+        <p class="copyright">Ingenieria web - MRLdGV Y EMA &copy;</p>
+    </footer>
+    <script src="build/js/bundle.min.js"></script>
+
+    
+<!--Crear Cuenta-->
+<div class="modal" id="CrearCuenta">
+    <div class="modal-content">
+      
+        <h2>Crea una Cuenta</h2>
+
+        <h5>Ingresa tu Nombre</h5>
+        <input id="RegNombre" placeholder="Ingresa un Nombre">
+        
+        <h5>Ingresa un Correo valido</h5>
+        <input id="RegCorreo" placeholder="Ingresa un Correo">
+        
+        <h5>Ingresa una Contraseña que cumpla lo siguiente: 8 caracteres, 1 Mayuscula, 1 minuscula, 1 numero</h5>
+        <input id="RegContraseña" placeholder="Ingresa una Contraseña">
+
+        <button class="boton-amarillo-block" id="CrearCuentaBtn">Crear Cuenta</button>
+        
+        <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--muted);">
+        <button class="boton-amarillo-block" id="CerrarCrearBtn">Cerrar</button>
+        
+    </div>
+</div>
+
+
+
+
+<!--Inicio de sesion-->
+<div class="modall" id="InicioSesion">
+  <div class="modal-contentt">
+      <h3>Inicio de Sesión</h3>
+
+      <!-- Contenedor del input con icono -->
+      <div class="input-icon">
+        <i class="fas fa-envelope"></i>
+        <input id="InitCorreo" placeholder="Escribe tu correo" type="email">
+      </div>
+
+      <div class="input-icon">
+        <i class="fas fa-lock"></i>
+        <input id="InitContraseña" placeholder="Escribe tu contraseña" type="password">
+        <button type="button" class="btn-eye" onclick="togglePassword()">
+         <i class="fas fa-eye" id="eyeIcon"></i>
+          </button>
+        </div>
+
+
+      <button class="boton-amarillo-block" id="InitSesionBtn">Iniciar Sesión</button>
+      <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--muted);">
+      <button class="boton-amarillo-block" id="CloseSesionBtn">Cerrar</button>
+  </div>
+</div>
+
+<!-- Vinculación JS -->
+<script src="script.js"></script>
+</body>
+</html>
