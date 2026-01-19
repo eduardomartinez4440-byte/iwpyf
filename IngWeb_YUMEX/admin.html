@@ -14,19 +14,69 @@
         <div class= "derecha">
             <div class="row" style="gap:8px">
 
-            <!-- TARJETA DE PERFIL (ESTÁ OCULTA AL INICIO) -->
-            <div id="ProfileCard" class="row" style="align-items:center; gap:8px; display:none;">
-                <img id="ProfileAvatar" src="build/img/PERFIL.jpg"
-                    style="width:40px;height:40px;border-radius:50%;border:2px solid white;">
-                <div style="display:flex; flex-direction:column; line-height:1;">
-                <span id="ProfileName" style="font-size:14px;font-weight:bold;">Usuario</span>
-                <span id="ProfileRole" style="font-size:12px;" class="muted">Rol</span>
+                <div id="OptionSesionBar">
+                    <button class="boton-amarillo-block" id="seedBtn">Iniciar Sesion</button>
                 </div>
-            </div>
 
-            <div id="CloseSesionBar">
-            <button class="boton-amarillo-block" id="CloseBtn">Cerrar Sesion</button>
+                <div id="CrearSesionBar">
+                    <button class="boton-amarillo-block" id="RegistrarBtn">Crear Cuenta</button>
+                </div>
+
+                <!-- TARJETA DE PERFIL (ESTÁ OCULTA AL INICIO) -->
+                <div id="ProfileCard" class="row" style="align-items:center; gap:8px; display:none;">
+                    <img id="ProfileAvatar" src="build/img/PERFIL.jpg"
+                        style="width:40px;height:40px;border-radius:50%;border:2px solid white;">
+                    <div style="display:flex; flex-direction:column; line-height:1;">
+                    <span id="ProfileName" style="font-size:14px;font-weight:bold;">Usuario</span>
+                    <span id="ProfileRole" style="font-size:12px;" class="muted">Rol</span>
+                    </div>
+                </div>
+
+                <div id="CloseSesionBar">
+                    <button class="boton-amarillo-block" id="CloseBtn">Cerrar Sesion</button>
+                </div>
+
+                <div id="OptionMiPerfil" style="display: none;">
+                    <button 
+                        class="boton-amarillo-block" 
+                        id="OpMiPerfil"
+                        onclick= "window.location.href='Perfil.html'">
+                        Perfil
+                    </button>        
+                </div>
+
             </div>
+        </div>
+
+        <div class= "derecha">
+            <div class="row" style="gap:8px">
+
+                <div id="OptionAdmin">
+                    <button 
+                        class="boton-amarillo-block" 
+                        id="OpAdminBtn"
+                        onclick= "window.location.href='admin.html'">
+                        Administrador
+                    </button>
+                </div>
+
+                <div id="OptionEmpleado">
+                    <button 
+                        class="boton-amarillo-block" 
+                        id="OpEmpleBtn"
+                        onclick= "window.location.href='Empleado.html'">
+                        Empleado
+                    </button>
+                </div>
+
+                <div id="OptionMisPedidos">
+                    <button 
+                        class="boton-amarillo-block" 
+                        id="OpMisPedidos"
+                        onclick= "window.location.href='pedidos.html'">
+                        Mis Pedidos
+                    </button>        
+                </div>
             </div>
         </div>
 
@@ -46,7 +96,7 @@
                         <a href="anuncio.html">Anuncios</a>
                         <a href="menu.html">Menu</a>
                         <a href="blog.html">Blog</a>
-                        <a href="contacto.html">Contacto</a>
+                        
                     </nav>
                 </div>
             </div> <!--.barra-->
@@ -59,11 +109,18 @@
     <!-- ADMIN -->
     <section id="admin-app">
         <h2>Panel de administración</h2>
-        <h3>ventas</h3>
-        <div>
-            <div class="card">
-                <h2 id="kpiVentas">$0.00</h2>
+        <div class="card" id="PlatilloTopMes">
+            <h3>Platillo más solicitado del mes</h3>
+            <div id="PlatilloTopContenido">
+                Cargando información...
             </div>
+        </div>
+        <br>
+        <div class="kpi">
+            <div class="card"><div class="tag"><h2>Ventas</h2></div><h2 id="kpiVentas">$0.00</h2></div>
+            <div class="card"><div class="tag"><h2>Pedidos</h2></div><h2 id="kpiPedidos">0</h2></div>
+            <div class="card"><div class="tag"><h2>Ticket promedio</h2></div><h2 id="kpiTicket">$0.00</h2></div>
+            <div class="card"><div class="tag"><h2>Artículos en menú</h2></div><h2 id="kpiMenu">0</h2></div>
         </div>
         <br/>
         <div class="card add-dish">
@@ -72,9 +129,15 @@
             <input id="newName" placeholder="Nombre"/>
             <input id="newPrice" type="number" min="0" step="0.01" placeholder="Precio"/>
             
-            <input id="newImg" name="imagen" type="file" accept="imagen/*">
+            <input id="newImg" name="imagen" type="file" accept="image/*">
             
-            <input id="newDesc" placeholder="Descripción"/>
+            <input id="newDesc" placeholder="Descripción">
+
+            <input id="newCategoria" placeholder="Ej. Bebidas, Postres">
+
+            <input id="newStock" placeholder="Stock">
+
+            <input id="newTiempo" placeholder="Tiempo (min)">
 
             <button class="boton-amarillo-block" id="addDishBtn">Agregar</button>
         </div>
@@ -86,6 +149,8 @@
             <div class="col">
                 <div class="card">
                 <h3>Platillos registrados</h3>
+                <input type="text" id="BuscadorAdminPlatillos" placeholder="Buscar platillo..." class="input-busqueda"/>
+                <br></br>
                 <div id="adminMenuListContainer"></div>
                 </div>
             </div>
@@ -93,8 +158,9 @@
             <!-- USUARIOS -->
             <div class="col">
                 <div class="card">
-                <h3>Usuarios registrados</h3>
-                <div id="usuariosGrid"></div>
+                    <h3>Cuentas registrados</h3>
+                    <div class="filter-bar" id="filterCuentas"></div>
+                    <div id="usuariosGrid"></div>
                 </div>
             </div>
         </div>
@@ -103,29 +169,39 @@
     
 
     <!-- MODAL EDITAR PLATILLO -->
-<div class="modal" id="EditPlatilloModal" style="display:none;">
-  <div class="modal-content">
-    <h3>Editar platillo</h3>
+    <div class="modal" id="EditPlatilloModal" style="display:none;">
+        <div class="modal-content">
+            <h3>Editar platillo</h3>
 
-    <input type="hidden" id="EditPlatilloId">
+            <input type="hidden" id="EditPlatilloId">
 
-    <label>Nombre</label>
-    <input id="EditNombre">
+            <label>Nombre</label>
+            <input id="EditNombre">
 
-    <label>Precio</label>
-    <input id="EditPrecio" type="number" step="0.01">
+            <label>Precio</label>
+            <input id="EditPrecio" type="number" step="0.01">
 
-    <label>Descripción</label>
-    <textarea id="EditDescripcion"></textarea>
+            <label>Stock</label>
+            <input id="EditStock" type="number" min="0">
 
-    <label>Imagen (opcional)</label>
-    <input type="file" id="EditImagen">
+            <label>Descripción</label>
+            <textarea id="EditDescripcion"></textarea>
 
-    <br><br>
-    <button class="boton-amarillo-block" id="GuardarPlatilloBtn">Guardar</button>
-    <button class="boton-amarillo-block" id="CerrarEditarPlatillo">Cancelar</button>
-  </div>
-</div>
+            <label>Tiempo de preparación (min)</label>
+            <input id="EditTiempo" type="number" min="1">
+
+            <label>Imagen (opcional)</label>
+            <input type="file" id="EditImagen">
+
+            <label>Categoría</label>
+            <input id="EditCategoria" placeholder="Categoria">
+
+
+            <br><br>
+            <button class="boton-amarillo-block" id="GuardarPlatilloBtn">Guardar</button>
+            <button class="boton-amarillo-block" id="CerrarEditarPlatillo">Cancelar</button>
+        </div>
+    </div>
 
 
 
@@ -135,7 +211,7 @@
                 <a href="anuncio.html">Anuncios</a>
                 <a href="menu.html">Menu</a>
                 <a href="blog.html">Blog</a>
-                <a href="contacto.html">Contacto</a>
+                
             </nav>
         </div>
 
