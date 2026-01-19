@@ -32,6 +32,21 @@
   gap: 12px;
 }
 
+#TarjetaModal .modal-content {
+  max-width: 650px;
+  width: 95%;
+  padding: 24px;
+}
+
+.input-busqueda {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--muted);
+  font-size: 14px;
+}
+
 
 /* =========================================================
    FORM ELEMENTS & BUTTONS
@@ -806,7 +821,9 @@ main { padding: 24px 0; }
 }
 
 .grid.menu {
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 .card {
@@ -816,6 +833,7 @@ main { padding: 24px 0; }
   box-shadow: var(--shadow);
   overflow: hidden;
   transition: transform .15s;
+  padding: 40px;
 }
 
 .card:hover { transform: scale(1.03); }
@@ -830,6 +848,16 @@ main { padding: 24px 0; }
 
 .card .p { padding: 16px; }
 .card h3 { margin: .4rem 0 0.1rem; }
+
+.monto-pagar {
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #1a2224;
+  text-align: center;
+  font-size: 18px;
+}
+
 
 /* =========================================================
    TABLES
@@ -941,13 +969,21 @@ main { padding: 24px 0; }
   padding: 20px;
   border-radius: var(--radius);
   width: 90%;
-  max-width: 500px;
+  max-width: 1000px;
   max-height: 80%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
+
+/* ===== MODAL DE RESEÑAS ===== */
+#reviewModal .modal-content {
+  width: 900px;          /* 🔥 ancho fijo */
+  max-width: 90vw;       /* 🧠 evita overflow en pantallas chicas */
+  min-width: 700px;      /* 🔒 asegura que no se haga pequeño */
+}
+
 
 .review-item {
   border-top: 1px solid #1f2a2e;
@@ -958,7 +994,7 @@ main { padding: 24px 0; }
 .star { color: gold; margin-right: 2px; }
 
 #reviewList {
-  max-height: 200px;
+  max-height: 400px;
   overflow-y: auto;
   border: 1px solid #1f2a2e;
   padding: 10px;
@@ -1325,16 +1361,38 @@ main { padding: 24px 0; }
   margin-bottom: 8px;
 }
 
+/* Contenedor de perfil con dos columnas iguales */
 .admin-two-columns {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch; /* 🔥 fuerza misma altura */
 }
 
+/* Cada columna (Dirección / Tarjeta) */
 .admin-two-columns .col {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--blanco);
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 520px; /* 🔥 MISMO TAMAÑO */
 }
+
+/* Contenido interno */
+.orders-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid de tarjetas/direcciones */
+.orders-wrapper .grid {
+  flex: 1;
+  overflow-y: auto; /* 🔥 scroll interno */
+  margin-top: 12px;
+}
+
 
 .usuario-card img.avatar {
   width: 55px;
@@ -1563,3 +1621,32 @@ main { padding: 24px 0; }
 
 
 /*# sourceMappingURL=app.css.map */
+
+.orders-wrapper {
+  padding: 100px;
+}
+
+.tarjeta-pago {
+  cursor: pointer;
+  transition: transform .15s, border .15s;
+}
+
+.tarjeta-pago:hover {
+  transform: scale(1.02);
+  border: 2px solid var(--primario);
+}
+
+input:invalid {
+  border: 2px solid #e74c3c;
+}
+
+.direccion-envio {
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.direccion-envio.selected {
+  border: 2px solid var(--primario);
+  background: #fef6e4;
+}
+
