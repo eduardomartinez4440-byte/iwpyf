@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 app.use('/build/img', express.static(path.join(__dirname,'build/img/'))); // CSS / IMG / JS
 
@@ -28,8 +28,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
-
+function verificarSesion(req, res, next) {
+  const idCuenta = req.cookies.id_cuenta;
+  if (!idCuenta) {
+    return res.status(401).json({ ok: false });
+  }
+  next();
+}
 
 
 
@@ -158,33 +163,6 @@ app.post('/crearCuenta', (req, res) => {
   });
 });
 
-app.post('/iniciarsesion', (req, res) => {
-  const { correo, contraseña } = req.body;
-
-  db.query(
-    "SELECT * FROM cuentas WHERE CORREO = ? AND CONTRASEÑA = ?",
-    [correo, contraseña],
-    (err, results) => {
-      if (err) return res.status(500).json({ error: 'Error BD' });
-
-      if (results.length === 0) {
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-      }
-
-      const user = results[0];
-
-      // 🔥 AQUÍ VA ESTO 🔥
-      req.session.user = {
-        ID_CUENTA: user.ID_CUENTA,
-        CORREO: user.CORREO,
-        ROL: user.ROL
-      };
-
-      res.json({ ok: true });
-    }
-  );
-});
-
 
 // Login con validación + generación de token
 app.post('/login', (req, res) => {
@@ -280,6 +258,11 @@ app.post('/login', (req, res) => {
   });
 });
 
+app.post("/logout", (req, res) => {
+  res.clearCookie("id_cuenta");
+  res.json({ ok: true });
+});
+
 
 //ENTRAR EN LA BASE DE DATOS Y BUSCAR EL USUARIO
 // Ruta protegida (requiere sesión)
@@ -362,8 +345,17 @@ app.get('/logout', async (req, res) => {
 // ================= MENU CLIENTE =================
 // Ruta pública para mostrar platillos activos
 app.get('/platillos', (req, res) => {
+  
   const sql = `
-    SELECT ID_PLATILLO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN
+    SELECT 
+      ID_PLATILLO, 
+      NOMBRE, 
+      PRECIO, 
+      DESCRIPCION, 
+      IMAGEN, 
+      STOCK, 
+      CATEGORIA,
+      TIEMPO_PREPARACION
     FROM platillos
     WHERE ACTIVO = 1
   `;
@@ -382,7 +374,7 @@ app.get('/platillos', (req, res) => {
 // RUTA PARA OBTENER PLATILLOS
 app.get('/admin/platillos', (req, res) => {
   const sql = `
-    SELECT ID_PLATILLO, NOMBRE, PRECIO, ACTIVO
+    SELECT ID_PLATILLO, NOMBRE, PRECIO, STOCK, ACTIVO
     FROM platillos
   `;
   db.query(sql, (err, rows) => {
@@ -399,6 +391,52 @@ app.get('/admin/usuarios', (req, res) => {
   db.query(sql, (err, rows) => {
     if (err) return res.status(500).json({ ok:false });
     res.json(rows);
+  });
+});
+
+
+
+
+// AGREGAR PLATILLO (ADMIN)
+app.post("/platillos/agregar", upload.single("imagen"), (req, res) => {
+  const { nombre, precio, descripcion, categoria, stock, tiempo } = req.body;
+  const imagen = req.file ? req.file.filename : null;
+  
+/*
+  if (!nombre || !precio || !descripcion || !stock || !categoria) {
+    return res.json({
+      ok: false,
+      mensaje: "Faltan datos del platillo"
+    });
+  }
+*/
+
+    const sql = `
+    INSERT INTO platillos (
+      NOMBRE, 
+      PRECIO, 
+      DESCRIPCION, 
+      IMAGEN, 
+      STOCK, 
+      CATEGORIA, 
+      TIEMPO_PREPARACION, 
+      ACTIVO)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+  `;
+
+  db.query(sql, [nombre, precio, descripcion, imagen, stock, categoria, tiempo], (err) => {
+    if (err) {
+      console.error("❌ Error al agregar platillo:", err);
+      return res.json({
+        ok: false,
+        mensaje: "Error al guardar platillo"
+      });
+    }
+
+    res.json({
+      ok: true,
+      mensaje: "✅ Platillo agregado correctamente"
+    });
   });
 });
 
@@ -431,21 +469,27 @@ app.use(express.static(path.join(__dirname)));
 
 //EDITAR PLATILLO
 app.post("/platillos/editar", upload.single("imagen"), (req, res) => {
-  const { id, nombre, precio, descripcion, categoria } = req.body;
+  const { id, nombre, precio, descripcion, stock, categoria, tiempo } = req.body;
   const nuevaImagen = req.file ? req.file.filename : null;
-
-  if (!id || !nombre || !precio || !descripcion) {
+  /*
+  if (!id || !nombre || !precio || !descripcion || !categoria) {
     return res.json({ 
       ok: false, 
       mensaje: "Faltan datos para actualizar." 
     });
   }
-
+  */
+  
   let sql = `
-    UPDATE platillos 
-    SET Nombre = ?, PRECIO = ?, DESCRIPCION = ?
+  UPDATE platillos 
+  SET NOMBRE = ?, PRECIO = ?, STOCK = ?, CATEGORIA = ?, TIEMPO_PREPARACION = ?
   `;
-  let params = [nombre, precio, descripcion];
+  let params = [nombre, precio, stock, categoria, tiempo];
+
+  if (descripcion) {
+    sql += `, DESCRIPCION = ? `;
+    params.push(descripcion);
+  }
 
   if (nuevaImagen) {
     sql += `, IMAGEN = ? `;
@@ -626,7 +670,7 @@ app.get('/admin/getUsuarios', (req, res) => {
 app.post("/admin/cambiarRol", (req, res) => {
   const { idUsuario, rol } = req.body;
 
-  const rolesValidos = ["Invitado", "Cliente", "Administrador"];
+  const rolesValidos = ["Invitado", "Cliente","Empleado", "Administrador"];
   if (!rolesValidos.includes(rol)) {
     return res.json({ ok: false, mensaje: "Rol inválido" });
   }
@@ -723,6 +767,7 @@ app.get("/obtenerpedidos1", (req, res) => {
       p.ID_PEDIDO,
       p.ID_CUENTA,
       p.FECHA_COMPRA,
+      p.TIPO_PAGO,
       p.TOTAL,
       p.ESTADO,
       d.CANTIDAD,
@@ -771,33 +816,42 @@ app.post('/eliminarpedido', (req, res) => {
 
 
 // GUARDAR PEDIDO EN BD
-app.post("/pedidosbd", (req, res) => {
-  const { items } = req.body;
+app.post("/pedidosbd", async (req, res) => {
+  const { items, tipo_pago } = req.body;
   const ID_CUENTA = req.cookies.id_cuenta;
 
   if (!ID_CUENTA) {
-    return res.status(401).json({
-      ok: false,
-      mensaje: "No es posible identificar la sesión del usuario"
-    });
+    return res.status(401).json({ ok: false });
   }
 
-  if (!items || !items.length) {
-    return res.status(400).json({ ok: false, mensaje: "Sin items" });
+  // 🔍 VALIDAR STOCK ANTES DE GUARDAR PEDIDO
+  for (const item of items) {
+    const [rows] = await db.promise().query(
+      "SELECT STOCK FROM platillos WHERE ID_PLATILLO = ?",
+      [item.id]
+    );
+
+    if (!rows.length || rows[0].STOCK < item.qty) {
+      return res.json({
+        ok: false,
+        mensaje: "❌ Stock insuficiente para algunos platillos"
+      });
+    }
   }
 
-  const total = items.reduce((s, it) => s + (it.qty * it.price), 0);
+  // ✅ SI PASA LA VALIDACIÓN, CONTINÚA NORMAL
+  const total = items.reduce((s, it) => s + it.qty * it.price, 0);
 
-  // Pedido principal
   db.query(
-    "INSERT INTO pedidos (ID_CUENTA, FECHA_COMPRA, TOTAL, ESTADO) VALUES (?, NOW(), ?, 'prep')",
-    [ID_CUENTA, total],
+    `INSERT INTO pedidos 
+     (ID_CUENTA, FECHA_COMPRA, TOTAL, ESTADO, TIPO_PAGO)
+     VALUES (?, NOW(), ?, 'prep', ?)`,
+    [ID_CUENTA, total, tipo_pago || 'efectivo'],
     (err, result) => {
-      if (err) return res.status(500).json({ ok:false });
+      if (err) return res.json({ ok: false });
 
       const idPedido = result.insertId;
 
-      // Detalle del pedido
       const values = items.map(i => [
         idPedido,
         i.id,
@@ -806,21 +860,31 @@ app.post("/pedidosbd", (req, res) => {
       ]);
 
       db.query(
-        "INSERT INTO pedido_detalle (ID_PEDIDO, ID_PLATILLO, CANTIDAD, PRECIO_UNITARIO) VALUES ?",
+        `INSERT INTO pedido_detalle 
+         (ID_PEDIDO, ID_PLATILLO, CANTIDAD, PRECIO_UNITARIO)
+         VALUES ?`,
         [values],
-        (err2) => {
-          if (err2) return res.status(500).json({ ok:false });
+        err2 => {
+          if (err2) return res.json({ ok: false });
 
-          res.json({
-            ok: true,
-            mensaje: "Pedido guardado",
-            idPedido
+          // 🔻 DESCONTAR STOCK
+          items.forEach(item => {
+            db.query(
+              `UPDATE platillos
+               SET STOCK = STOCK - ?
+               WHERE ID_PLATILLO = ? AND STOCK >= ?`,
+              [item.qty, item.id, item.qty]
+            );
           });
+
+          res.json({ ok: true });
         }
       );
     }
   );
 });
+
+
 
 
 //PARA EL ADMIN
@@ -830,7 +894,7 @@ app.get("/obtenerpedidos_admin", (req, res) => {
         p.ID_PEDIDO,
         p.ID_CUENTA,
         p.FECHA_COMPRA,
-        p.TOTAL,
+        p.TOTAL
      FROM pedidos p
      ORDER BY p.ID_PEDIDO DESC`,
     (err, rows) => {
@@ -863,6 +927,426 @@ app.post('/platillos/toggle', (req, res) => {
     res.json({ ok: true });
   });
 });
+
+app.get('/empleado/getpedidos', (req, res) => {
+  const token = req.cookies.token_sesion;
+  if (!token) return res.status(401).json({ ok: false });
+
+  db.query(
+    "SELECT ROL FROM cuentas WHERE token_sesion = ?",
+    [token],
+    (err, r) => {
+      if (err || r.length === 0 || r[0].ROL !== 'Empleado') {
+        return res.status(403).json({ ok: false });
+      }
+
+      const query = `
+        SELECT 
+          p.ID_PEDIDO,
+          p.ID_CUENTA,
+          c.NOMBRE AS NOMBRE_CLIENTE,
+          p.ESTADO,
+          p.TOTAL,
+          p.TIPO_PAGO,
+          d.ID_PLATILLO,
+          d.CANTIDAD,
+          pl.NOMBRE AS NOMBRE_PLATILLO
+        FROM pedidos p
+        JOIN pedido_detalle d ON p.ID_PEDIDO = d.ID_PEDIDO
+        JOIN platillos pl ON pl.ID_PLATILLO = d.ID_PLATILLO
+        JOIN cuentas c ON c.ID_CUENTA = p.ID_CUENTA
+        ORDER BY p.ID_PEDIDO DESC
+      `;
+
+
+      db.query(query, (err2, rows) => {
+        if (err2) return res.json({ ok: false });
+
+        const pedidos = {};
+
+        rows.forEach(r => {
+          if (!pedidos[r.ID_PEDIDO]) {
+            pedidos[r.ID_PEDIDO] = {
+              ID_PEDIDO: r.ID_PEDIDO,
+              ID_CUENTA: r.ID_CUENTA,
+              NOMBRE_CLIENTE: r.NOMBRE_CLIENTE,
+              ESTADO: r.ESTADO,
+              TOTAL: r.TOTAL,          // ✅ AGREGADO
+              TIPO_PAGO: r.TIPO_PAGO,  // ✅ AGREGADO
+              platillos: []
+            };
+          }
+
+          pedidos[r.ID_PEDIDO].platillos.push({
+            NOMBRE_PLATILLO: r.NOMBRE_PLATILLO,
+            CANTIDAD: r.CANTIDAD
+          });
+        });
+
+        res.json({ ok: true, pedidos: Object.values(pedidos) });
+      });
+    }
+  );
+});
+
+app.post('/empleado/actualizarestado', (req, res) => {
+  const { id, estado } = req.body;
+
+  if (!id || !estado) {
+    return res.json({ ok: false });
+  }
+
+  db.query(
+    "UPDATE pedidos SET ESTADO = ? WHERE ID_PEDIDO = ?",
+    [estado, id],
+    (err) => {
+      if (err) return res.json({ ok: false });
+      res.json({ ok: true });
+    }
+  );
+});
+
+app.post("/guardar-tarjeta", (req, res) => {
+  const token = req.cookies.token_sesion;
+  const { numero, nombre, exp } = req.body;
+
+  if (!token) return res.status(401).json({ ok: false });
+
+  db.query(
+    "SELECT ID_CUENTA FROM cuentas WHERE token_sesion = ?",
+    [token],
+    (err, r) => {
+      if (err || r.length === 0) return res.json({ ok: false });
+
+      const ID_CUENTA = r[0].ID_CUENTA;
+
+      // eliminamos tarjeta previa (1 tarjeta por usuario)
+      db.query(
+        "DELETE FROM tarjetas WHERE ID_CUENTA = ?",
+        [ID_CUENTA],
+        () => {
+          db.query(
+            `INSERT INTO tarjetas
+             (ID_CUENTA, NUMERO_TARJETA, NOMBRE_TITULAR, FECHA_EXP)
+             VALUES (?, ?, ?, ?)`,
+            [ID_CUENTA, numero, nombre, exp],
+            err2 => {
+              if (err2) return res.json({ ok: false });
+              res.json({ ok: true });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
+// KPIs del panel de administración
+app.get('/api/admin/kpis', (req, res) => {
+
+    const qVentas = `SELECT IFNULL(SUM(TOTAL),0) AS ventas FROM PEDIDOS`;
+    const qPedidos = `SELECT COUNT(*) AS pedidos FROM PEDIDOS`;
+    const qTicket = `SELECT IFNULL(AVG(TOTAL),0) AS ticket FROM PEDIDOS`;
+    const qMenu = `SELECT COUNT(*) AS menu FROM PLATILLOS`;
+
+    db.query(qVentas, (err, ventasRes) => {
+        if (err) return res.status(500).json(err);
+
+        db.query(qPedidos, (err, pedidosRes) => {
+            if (err) return res.status(500).json(err);
+
+            db.query(qTicket, (err, ticketRes) => {
+                if (err) return res.status(500).json(err);
+
+                db.query(qMenu, (err, menuRes) => {
+                    if (err) return res.status(500).json(err);
+
+                    res.json({
+                        ventas: ventasRes[0].ventas,
+                        pedidos: pedidosRes[0].pedidos,
+                        ticket: ticketRes[0].ticket,
+                        menu: menuRes[0].menu
+                    });
+                });
+            });
+        });
+    });
+});
+
+
+
+
+//==========================Agregar Direccion =======================
+app.post("/perfil/direccion", (req, res) => {
+  const idCuenta = req.cookies.id_cuenta;
+  const {
+    calle, numExt, numInt,
+    colonia, cp, municipio,
+    ciudad, pais
+  } = req.body;
+
+  if (!idCuenta ||
+      !calle || !numExt || !numInt ||
+      !colonia || !cp || !municipio ||
+      !ciudad || !pais) {
+    return res.status(400).json({ ok: false, error: "Campos incompletos" });
+  }
+
+  const sql = `
+    INSERT INTO direcciones
+    (ID_CUENTA, CALLE, NUM_EXT, NUM_INT, COLONIA, CP, MUNICIPIO, CIUDAD, PAIS)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(sql, [
+    idCuenta, calle, numExt, numInt,
+    colonia, cp, municipio, ciudad, pais
+  ], err => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ ok: false });
+    }
+    res.json({ ok: true });
+  });
+});
+
+
+app.get("/perfil/direcciones", (req, res) => {
+  const idCuenta = req.cookies.id_cuenta;
+  if (!idCuenta) return res.status(401).json([]);
+
+  db.query(
+    "SELECT * FROM direcciones WHERE ID_CUENTA = ?",
+    [idCuenta],
+    (err, rows) => res.json(rows || [])
+  );
+});
+
+
+
+
+//============================ Agregar Tarjeta ====================
+app.post("/perfil/tarjeta", (req, res) => {
+  const idCuenta = req.cookies.id_cuenta;
+  const { titular, numero, fecha, cvv } = req.body;
+
+  if (!idCuenta || !titular || !numero || !fecha || !cvv) {
+    return res.status(400).json({ ok: false, error: "Campos incompletos" });
+  }
+
+  const sql = `
+    INSERT INTO tarjetas
+    (ID_CUENTA, TITULAR, NUM_TARJETA, FECHA_EXP, CVV)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  db.query(sql, [idCuenta, titular, numero, fecha, cvv], err => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ ok: false });
+    }
+    res.json({ ok: true });
+  });
+});
+
+
+app.get("/perfil/tarjetas", (req, res) => {
+  const idCuenta = req.cookies.id_cuenta;
+  if (!idCuenta) return res.status(401).json([]);
+
+  db.query(
+    "SELECT ID_TARJETA, TITULAR, NUM_TARJETA, FECHA_EXP FROM tarjetas WHERE ID_CUENTA = ?",
+    [idCuenta],
+    (err, rows) => res.json(rows || [])
+  );
+});
+
+
+
+
+//========================== Editar Direccion =========================
+
+app.get("/perfil/direccion/:id", (req, res) => {
+  db.query(
+    "SELECT * FROM direcciones WHERE ID_DIRECCION = ? AND ID_CUENTA = ?",
+    [req.params.id, req.cookies.id_cuenta],
+    (err, rows) => res.json(rows[0])
+  );
+});
+
+app.put("/perfil/direccion/:id", (req, res) => {
+  const { calle, numExt, numInt, colonia, cp, municipio, ciudad, pais } = req.body;
+
+  const sql = `
+    UPDATE direcciones SET
+      CALLE=?, NUM_EXT=?, NUM_INT=?, COLONIA=?,
+      CP=?, MUNICIPIO=?, CIUDAD=?, PAIS=?
+    WHERE ID_DIRECCION=? AND ID_CUENTA=?
+  `;
+
+  db.query(sql, [
+    calle, numExt, numInt, colonia,
+    cp, municipio, ciudad, pais,
+    req.params.id, req.cookies.id_cuenta
+  ], err => {
+    if (err) return res.json({ ok: false });
+    res.json({ ok: true });
+  });
+});
+
+
+//======================== Tarjeta Editar =========================
+
+app.get("/perfil/tarjeta/:id", (req, res) => {
+  db.query(
+    "SELECT * FROM tarjetas WHERE ID_TARJETA=? AND ID_CUENTA=?",
+    [req.params.id, req.cookies.id_cuenta],
+    (err, rows) => res.json(rows[0])
+  );
+});
+
+app.put("/perfil/tarjeta/:id", (req, res) => {
+  const { titular, numero, fecha, cvv } = req.body;
+
+  db.query(
+    `UPDATE tarjetas 
+     SET TITULAR=?, NUM_TARJETA=?, FECHA_EXP=?, CVV=?
+     WHERE ID_TARJETA=? AND ID_CUENTA=?`,
+    [titular, numero, fecha, cvv, req.params.id, req.cookies.id_cuenta],
+    err => {
+      if (err) return res.json({ ok: false });
+      res.json({ ok: true });
+    }
+  );
+});
+
+
+// ================ Pedido =================================
+app.post("/pedido/finalizar", (req, res) => {
+  const idCuenta = req.cookies.id_cuenta;
+  const { total, tipoPago, tipoEntrega, idDireccion } = req.body;
+
+  if (!idCuenta || !tipoPago || !tipoEntrega) {
+    return res.status(400).json({ ok: false });
+  }
+
+  const sql = `
+    INSERT INTO pedidos
+    (ID_CUENTA, TOTAL, TIPO_PAGO, TIPO_ENTREGA, ID_DIRECCION)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  db.query(sql, [
+    idCuenta,
+    total,
+    tipoPago,
+    tipoEntrega,
+    tipoEntrega === "DOMICILIO" ? idDireccion : null
+  ], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.json({ ok: false });
+    }
+
+    res.json({ ok: true, idPedido: result.insertId });
+  });
+});
+
+app.get("/tarjetas", verificarSesion, (req, res) => {
+  const idCuenta = req.cookies.id_cuenta;
+
+  if (!idCuenta) {
+    return res.json({ ok: false, tarjetas: [] });
+  }
+
+  db.query(
+    "SELECT ID_TARJETA, TITULAR, NUM_TARJETA, FECHA_EXP FROM tarjetas WHERE ID_CUENTA = ?",
+    [idCuenta],
+    (err, rows) => {
+      if (err) {
+        console.error("Error al obtener tarjetas:", err);
+        return res.json({ ok: false, tarjetas: [] });
+      }
+
+      res.json({ ok: true, tarjetas: rows });
+    }
+  );
+});
+
+function verificarSesion(req, res, next) {
+  const idCuenta = req.cookies.id_cuenta;
+
+  if (!idCuenta) {
+    return res.status(401).json({ ok: false, mensaje: "Sesión no válida" });
+  }
+
+  next();
+}
+
+app.get("/mi-perfil", verificarSesion, (req, res) => {
+  const idCuenta = req.cookies.id_cuenta;
+
+  db.query(
+    "SELECT NOMBRE, EMAIL, PASSWORD FROM cuentas WHERE ID_CUENTA = ?",
+    [idCuenta],
+    (err, rows) => {
+      if (err) {
+        console.error("Error al obtener perfil:", err);
+        return res.json({ ok: false });
+      }
+
+      if (rows.length === 0) {
+        return res.json({ ok: false });
+      }
+
+      res.json({
+        ok: true,
+        usuario: {
+          nombre: rows[0].NOMBRE,
+          email: rows[0].EMAIL,
+          password: rows[0].PASSWORD
+        }
+      });
+    }
+  );
+});
+
+app.get("/admin/platillo-top-mes", verificarSesion, (req, res) => {
+
+  const sql = `
+    SELECT 
+      p.NOMBRE,
+      SUM(pd.CANTIDAD) AS total_vendido,
+      SUM(pd.CANTIDAD * pd.PRECIO_UNITARIO) AS total_generado
+    FROM PEDIDOS pe
+    JOIN PEDIDO_DETALLE pd ON pe.ID_PEDIDO = pd.ID_PEDIDO
+    JOIN PLATILLOS p ON pd.ID_PLATILLO = p.ID_PLATILLO
+    WHERE MONTH(pe.FECHA_COMPRA) = MONTH(CURRENT_DATE())
+      AND YEAR(pe.FECHA_COMPRA) = YEAR(CURRENT_DATE())
+    GROUP BY p.ID_PLATILLO
+    ORDER BY total_vendido DESC
+    LIMIT 1
+  `;
+
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.error("Error platillo top mes:", err);
+      return res.json({ ok: false });
+    }
+
+    if (rows.length === 0) {
+      return res.json({ ok: true, platillo: null });
+    }
+
+    res.json({
+      ok: true,
+      platillo: rows[0]
+    });
+  });
+});
+
+
+
 
 
 

@@ -15,11 +15,11 @@
             <div class="row" style="gap:8px">
 
                 <div id="OptionSesionBar">
-                    <button class="boton-amarillo-block" id="seedBtn">Iniciar Sesion</button>
+                    <button type="button" class="boton-amarillo-block" id="seedBtn">Iniciar Sesion</button>
                 </div>
 
                 <div id="CrearSesionBar">
-                    <button class="boton-amarillo-block" id="RegistrarBtn">Crear Cuenta</button>
+                    <button type="button" class="boton-amarillo-block" id="RegistrarBtn">Crear Cuenta</button>
                 </div>
 
                 <!-- TARJETA DE PERFIL (ESTÁ OCULTA AL INICIO) -->
@@ -33,18 +33,8 @@
                 </div>
 
                 <div id="CloseSesionBar">
-                    <button class="boton-amarillo-block" id="CloseBtn">Cerrar Sesion</button>
+                <button type="button" class="boton-amarillo-block" id="CloseBtn">Cerrar Sesion</button>
                 </div>
-
-                <div id="OptionMiPerfil" style="display: none;">
-                    <button 
-                        class="boton-amarillo-block" 
-                        id="OpMiPerfil"
-                        onclick= "window.location.href='Perfil.html'">
-                        Perfil
-                    </button>        
-                </div>
-
             </div>
         </div>
 
@@ -79,7 +69,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div class="contenedor contenido-header">
             <div class="barra">
                 <a href="/">
@@ -106,105 +96,118 @@
     </header>
 
 
-    <!-- ADMIN -->
-    <section id="admin-app">
-        <h2>Panel de administración</h2>
-        <div class="card" id="PlatilloTopMes">
-            <h3>Platillo más solicitado del mes</h3>
-            <div id="PlatilloTopContenido">
-                Cargando información...
-            </div>
+    <section id="Perfil-app" hidden>
+        
+        <div class="orders-wrapper"> 
+            <div class="grid" id="MisDatosGrid"></div>
         </div>
-        <br>
-        <div class="kpi">
-            <div class="card"><div class="tag"><h2>Ventas</h2></div><h2 id="kpiVentas">$0.00</h2></div>
-            <div class="card"><div class="tag"><h2>Pedidos</h2></div><h2 id="kpiPedidos">0</h2></div>
-            <div class="card"><div class="tag"><h2>Ticket promedio</h2></div><h2 id="kpiTicket">$0.00</h2></div>
-            <div class="card"><div class="tag"><h2>Artículos en menú</h2></div><h2 id="kpiMenu">0</h2></div>
-        </div>
-        <br/>
-        <div class="card add-dish">
-        <h3>Agregar platillo</h3>
-        <div class="row" style="gap:8px;flex-wrap:wrap">
-            <input id="newName" placeholder="Nombre"/>
-            <input id="newPrice" type="number" min="0" step="0.01" placeholder="Precio"/>
-            
-            <input id="newImg" name="imagen" type="file" accept="image/*">
-            
-            <input id="newDesc" placeholder="Descripción">
-
-            <input id="newCategoria" placeholder="Ej. Bebidas, Postres">
-
-            <input id="newStock" placeholder="Stock">
-
-            <input id="newTiempo" placeholder="Tiempo (min)">
-
-            <button class="boton-amarillo-block" id="addDishBtn">Agregar</button>
-        </div>
-        </div>
-
 
         <div class="admin-two-columns">
-            <!-- PLATILLOS -->
+            
             <div class="col">
+            
+                <h2>Direccion</h2>
+                <div class="orders-wrapper">
                 <div class="card">
-                <h3>Platillos registrados</h3>
-                <input type="text" id="BuscadorAdminPlatillos" placeholder="Buscar platillo..." class="input-busqueda"/>
-                <br></br>
-                <div id="adminMenuListContainer"></div>
+                    
+                    <div class="row" style="flex-wrap: wrap;">
+                        <input id="newCalle" placeholder="Calle">
+                        <input id="newNumExt" placeholder="Numero Exterior">
+                        <input id="newNumInt" placeholder="Numero Interior">
+                        <input id="newCol" placeholder="Colonia">
+                        <input id="newCP" placeholder="Codigo Postal">
+                        <input id="newMun" placeholder="Municipio">
+                        <input id="newCd" placeholder="Ciudad">
+                        <input id="newPais" placeholder="Pais">     
+                        <br></br>                     
+                        <button type="button" class="boton-amarillo-block" id="addDirBtn">Agregar</button>
+                    </div>
                 </div>
+                </div>
+                <div class="orders-wrapper"> 
+                    <div class="grid" id="DireccionGrid"></div>
+                </div>
+                
+            
             </div>
 
-            <!-- USUARIOS -->
             <div class="col">
+                
+                <h2>Tarjeta</h2>
+                <div class="orders-wrapper">
                 <div class="card">
-                    <h3>Cuentas registrados</h3>
-                    <div class="filter-bar" id="filterCuentas"></div>
-                    <div id="usuariosGrid"></div>
+                    
+                    <div class="row" style="flex-wrap: wrap;">
+                        <input id="newTitular" placeholder="Nombre del Titular">
+                        <input id="newNumTarjeta" placeholder="Numero de Tarjeta">
+                        <input id="newFechExp" placeholder="Fecha de Expiracion">
+                        <input id="newCVV" placeholder="CVV">
+                        <br></br>           
+                        <button class="boton-amarillo-block" id="addTarjBtn">Agregar</button>
+                    </div>
+                </div>
+                </div>
+                <div class="orders-wrapper"> 
+                    <div class="grid" id="TarjetaGrid"></div>
                 </div>
             </div>
         </div>
 
     </section>
-    
 
-    <!-- MODAL EDITAR PLATILLO -->
-    <div class="modal" id="EditPlatilloModal" style="display:none;">
+    <div class="modal" id="editDireccionModal">
         <div class="modal-content">
-            <h3>Editar platillo</h3>
+            <h3>Editar Dirección</h3>
 
-            <input type="hidden" id="EditPlatilloId">
+            <input type="hidden" id="editDirId">
 
-            <label>Nombre</label>
-            <input id="EditNombre">
+            <input id="editCalle" placeholder="Calle">
+            <input id="editNumExt" placeholder="Número Exterior">
+            <input id="editNumInt" placeholder="Número Interior">
+            <input id="editCol" placeholder="Colonia">
+            <input id="editCP" placeholder="Código Postal">
+            <input id="editMun" placeholder="Municipio">
+            <input id="editCd" placeholder="Ciudad">
+            <input id="editPais" placeholder="País">
 
-            <label>Precio</label>
-            <input id="EditPrecio" type="number" step="0.01">
+            <button class="boton-amarillo-block" onclick="guardarDireccionEditada()">
+            Guardar
+            </button>
+            <button class="btn ghost" onclick="cerrarModalDir()">Cancelar</button>
+        </div>
+    </div>
 
-            <label>Stock</label>
-            <input id="EditStock" type="number" min="0">
+    <div class="modal" id="editTarjetaModal">
+        <div class="modal-content">
+            <h3>Editar Tarjeta</h3>
 
-            <label>Descripción</label>
-            <textarea id="EditDescripcion"></textarea>
+            <input type="hidden" id="editTarjId">
 
-            <label>Tiempo de preparación (min)</label>
-            <input id="EditTiempo" type="number" min="1">
+            <input id="editTitular" placeholder="Titular">
+            <input id="editNumTarjeta" placeholder="Número de tarjeta">
+            <input id="editFechaExp" placeholder="Fecha Exp">
+            <input id="editCVV" placeholder="CVV">
 
-            <label>Imagen (opcional)</label>
-            <input type="file" id="EditImagen">
-
-            <label>Categoría</label>
-            <input id="EditCategoria" placeholder="Categoria">
-
-
-            <br><br>
-            <button class="boton-amarillo-block" id="GuardarPlatilloBtn">Guardar</button>
-            <button class="boton-amarillo-block" id="CerrarEditarPlatillo">Cancelar</button>
+            <button class="boton-amarillo-block" onclick="guardarTarjetaEditada()">
+            Guardar
+            </button>
+            <button class="btn ghost" onclick="cerrarModalTarj()">Cancelar</button>
         </div>
     </div>
 
 
 
+
+
+
+
+
+
+
+
+
+
+    
     <footer class="footer seccion">
         <div class="contenedor contenedor-footer">
             <nav class="navegacion">
@@ -245,7 +248,7 @@
         <button class="boton-amarillo-block" id="CrearCuentaBtn">Crear Cuenta</button>
         
         <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--muted);">
-        <button class="boton-amarillo-block" id="CerrarCrearBtn">Cerrar</button>
+        <button type="button" class="boton-amarillo-block" id="CerrarCrearBtn">Cerrar</button>
         
     </div>
 </div>

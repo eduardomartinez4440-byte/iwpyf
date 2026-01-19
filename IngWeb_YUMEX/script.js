@@ -25,6 +25,13 @@ window.fetch = function(url, options = {}) {
 
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let isLogged = false;
+let pedidoPendiente = null;
+let tipoEntregaSeleccionado = null; // LOCAL | DOMICILIO
+let direccionSeleccionada = null;   // ID_DIRECCION | null
+let tipoPagoSeleccionado = null;    // efectivo | tarjeta
+
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
   renderOptionSesion();
@@ -38,27 +45,58 @@ const state = {
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+  const rutaActual = window.location.pathname;
+
+  const paginasProtegidas = [
+    "/perfil.html",
+    "/admin.html",
+    "/empleado.html",
+    "/mis-pedidos.html"
+  ];
+
+  await restaurarSesion();
+
+  // 🔒 Si es página protegida y no hay sesión → fuera
+  if (paginasProtegidas.includes(rutaActual) && !isLogged) {
+    window.location.href = "/";
+    return;
+  }
+
+  // Mostrar sección privada si existe
+  const perfilApp = document.getElementById("vendedor-app");
+  if (perfilApp && isLogged) {
+    perfilApp.hidden = false;
+  }
+});
+
+
+async function restaurarSesion() {
   try {
-    const res = await fetch("/bienvenido");
-    renderClienteUI();
+    const res = await fetch("/bienvenido", {
+      credentials: "include"
+    });
 
     const data = await res.json();
 
-    if (!data.ok) {
-      cerrarSesionForzada();
-      return;
+    if (data.ok) {
+      isLogged = true;
+      localStorage.setItem("userName", data.usuario);
+      localStorage.setItem("userRole", data.rol);
+    } else {
+      isLogged = false;
+      localStorage.clear();
     }
 
-    // Sesión válida
-    isLogged = true;
-    localStorage.setItem("userName", data.usuario);
-    localStorage.setItem("userRole", data.rol);
-    renderOptionSesion();
-
-  } catch (err) {
-    cerrarSesionForzada();
+  } catch (error) {
+    isLogged = false;
+    localStorage.clear();
   }
-});
+
+  renderOptionSesion();
+}
+
+
 
 function cerrarSesionForzada() {
   isLogged = false;
@@ -73,8 +111,101 @@ function cerrarSesionForzada() {
   console.warn("⚠️ Sesión inválida o expirada");
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("algo");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      // código
+    });
+  }
+});
+
+function onClick(id, handler) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', handler);
+}
+
+const userFilterState = {
+  role: 'Todos'
+};
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function activarSesion(usuario) {
+  // Ocultar botones de inicio
+  document.getElementById("OptionSesionBar").style.display = "none";
+  document.getElementById("CrearSesionBar").style.display = "none";
+
+  // Mostrar botones de sesión
+  document.getElementById("CloseSesionBar").style.display = "block";
+  document.getElementById("OptionMiPerfil").style.display = "block";
+  document.getElementById("ProfileCard").style.display = "flex";
+
+  // Datos del usuario
+  document.getElementById("ProfileName").textContent = usuario.nombre;
+  document.getElementById("ProfileRole").textContent = usuario.rol;
+
+  // Mostrar opciones por rol
+  if (usuario.rol === "admin") {
+    document.getElementById("OptionAdmin").style.display = "block";
+  }
+
+  if (usuario.rol === "empleado") {
+    document.getElementById("OptionEmpleado").style.display = "block";
+  }
+
+  if (usuario.rol === "cliente") {
+    document.getElementById("OptionMisPedidos").style.display = "block";
+  }
+}
+
+fetch("/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    correo: InitCorreo.value,
+    contraseña: InitContraseña.value
+  })
+})
+.then(res => res.json())
+.then(data => {
+  if (data.ok) {
+    activarSesion({
+      nombre: data.usuario.nombre,
+      rol: data.usuario.rol
+    });
+  }
+});
+
+document.getElementById("CloseBtn").addEventListener("click", () => {
+  location.reload(); // o limpiar cookies y redirigir
+});
 
 
 // CAMBIO DE ROL CON EL SELECT 
@@ -104,67 +235,68 @@ function setRole(r) {
 // ============ BOTON DE INICIO SESION, CREAR, Cerrar ==============
 // RENDERIZAR LOS BOTONES DE SESIÓN
 function renderOptionSesion() {
-  const barLogin = $('#OptionSesionBar');
-  const barRegister = $('#CrearSesionBar');
-  const barLogout = $('#CloseSesionBar');
-  const profileCard = $('#ProfileCard');
+  console.log("Sesión activa:", isLogged);
 
-  // Protección contra null
-  if (!barLogout || !profileCard) return;
+  const barLogin = document.getElementById('OptionSesionBar');
+  const barRegister = document.getElementById('CrearSesionBar');
+  const barLogout = document.getElementById('CloseSesionBar');
+  const profileCard = document.getElementById('ProfileCard');
+  const perfilBtn = document.getElementById('OptionMiPerfil');
 
   if (isLogged) {
-    // Usuario logueado
     if (barLogin) barLogin.style.display = "none";
     if (barRegister) barRegister.style.display = "none";
 
-    barLogout.style.display = "block";
-    profileCard.style.display = "flex";
+    if (barLogout) barLogout.style.display = "block";
+    if (profileCard) profileCard.style.display = "flex";
+    if (perfilBtn) perfilBtn.style.display = "block";
 
     const name = localStorage.getItem('userName') || 'Usuario';
     const role = localStorage.getItem('userRole') || 'Cliente';
 
-    const nameEl = $('#ProfileName');
-    const roleEl = $('#ProfileRole');
+    const nameEl = document.getElementById('ProfileName');
+    const roleEl = document.getElementById('ProfileRole');
 
     if (nameEl) nameEl.textContent = name;
     if (roleEl) roleEl.textContent = role;
 
   } else {
-    // Usuario NO logueado
     if (barLogin) barLogin.style.display = "block";
     if (barRegister) barRegister.style.display = "block";
 
-    barLogout.style.display = "none";
-    profileCard.style.display = "none"; // 🔥 CLAVE
+    if (barLogout) barLogout.style.display = "none";
+    if (profileCard) profileCard.style.display = "none";
+    if (perfilBtn) perfilBtn.style.display = "none";
   }
+
   renderRoleButtons();
 }
+
 
 // ============ CONTROL DE BOTONES POR ROL ============
 function renderRoleButtons() {
   const adminBtn = document.getElementById('OptionAdmin');
   const pedidosBtn = document.getElementById('OptionMisPedidos');
+  const empleadoBtn = document.getElementById('OptionEmpleado');
 
-  // Protección
-  if (!adminBtn || !pedidosBtn) return;
+  if (adminBtn) adminBtn.style.display = 'none';
+  if (pedidosBtn) pedidosBtn.style.display = 'none';
+  if (empleadoBtn) empleadoBtn.style.display = 'none';
 
-  // Ocultar ambos por defecto
-  adminBtn.style.display = 'none';
-  pedidosBtn.style.display = 'none';
-
-  // Si no hay sesión → no mostrar nada
   if (!isLogged) return;
 
   const role = localStorage.getItem('userRole');
 
-  // Cliente → solo Mis Pedidos
-  if (role === 'Cliente') {
+  if (role === 'Cliente' && pedidosBtn) {
     pedidosBtn.style.display = 'block';
   }
 
-  // Administrador → solo Administrador
-  if (role === 'Administrador') {
+  if (role === 'Administrador' && adminBtn) {
     adminBtn.style.display = 'block';
+  }
+
+  if (role === 'Empleado' && empleadoBtn) {
+    empleadoBtn.style.display = 'block';
   }
 }
 
@@ -326,7 +458,16 @@ $('#CloseBtn').onclick = async () => {
 document.addEventListener('DOMContentLoaded', async () => {
   if (document.getElementById('menuGrid')) {
     console.log('✅ menuGrid existe');
+    
     await cargarPlatillos();
+    
+    // 🔍 DEBUG DE CATEGORÍAS (AQUÍ VA)
+    console.log(
+      'Categorias detectadas:',
+      [...new Set(storage.get('menu', []).map(p => p.categoria))]
+    );
+
+    renderCategorias();
     renderMenu();
     renderCart();
 
@@ -343,16 +484,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function cargarUsuariosAdmin() {
   const res = await fetch('/admin/usuarios');
   const usuarios = await res.json();
+
+  // 🔥 GUARDAR EN STORAGE
+  storage.set('usuarios', usuarios);
+
   renderUsuariosAdmin(usuarios);
 }
+
 
 function renderUsuariosAdmin(usuarios) {
   const grid = document.getElementById('usuariosGrid');
   if (!grid) return;
 
+  let filtrados = usuarios;
+
+  if (userFilterState.role !== 'Todos') {
+    filtrados = usuarios.filter(
+      u => u.ROL === userFilterState.role
+    );
+  }
+
   grid.innerHTML = '';
 
-  usuarios.forEach(u => {
+  if (!filtrados.length) {
+    grid.innerHTML = '<p class="muted">No hay usuarios con este rol</p>';
+    return;
+  }
+
+  filtrados.forEach(u => {
     const card = document.createElement('div');
     card.className = 'card p';
 
@@ -362,12 +521,12 @@ function renderUsuariosAdmin(usuarios) {
 
       <label>Rol:</label>
       <select data-id="${u.ID_CUENTA}" class="rolSelect">
-        <option value="Invitado" ${u.ROL === "Invitado" ? "selected" : ""}>Invitado</option>
         <option value="Cliente" ${u.ROL === "Cliente" ? "selected" : ""}>Cliente</option>
+        <option value="Empleado" ${u.ROL === "Empleado" ? "selected" : ""}>Empleado</option>
         <option value="Administrador" ${u.ROL === "Administrador" ? "selected" : ""}>Administrador</option>
       </select>
 
-      <p style="color:${u.ACTIVO ? 'green':'red'}">
+      <p style="color:${u.ACTIVO ? 'green' : 'red'}">
         ${u.ACTIVO ? 'Activo' : 'Inactivo'}
       </p>
     `;
@@ -438,6 +597,8 @@ async function cargarPlatillosAdmin() {
     id: p.ID_PLATILLO,
     name: p.NOMBRE,
     price: p.PRECIO,
+    desc: p.DESCRIPCION,
+    stock: p.STOCK, 
     activo: p.ACTIVO === 1
   })));
   renderAdminMenuList();
@@ -457,6 +618,9 @@ async function cargarPlatillos() {
       price: Number(p.precio ?? p.PRECIO),
       desc: p.descripcion ?? p.DESCRIPCION,
       img: p.imagen ?? p.IMAGEN,
+      stock: p.STOCK, 
+      categoria: p.CATEGORIA,
+      tiempo: p.TIEMPO_PREPARACION,
       activo: true
     }));
 
@@ -476,6 +640,10 @@ function renderMenu() {
 
   let menu = storage.get('menu', []).filter(p => p.activo);
 
+  if (state.filter && state.filter !== 'Todos') {
+    menu = menu.filter(p => p.categoria === state.filter);
+  }
+
   if (!menu.length) {
     wrap.innerHTML = '<p class="muted">No hay productos disponibles</p>';
     return;
@@ -489,18 +657,39 @@ function renderMenu() {
 
     card.innerHTML = `
       <img src="${img}" onerror="this.src='/build/img/PERFIL.jpg'">
-      <h4>${p.name}</h4>
-      <p>${p.desc}</p>
-      <strong class="price">${fmt(p.price)}</strong>
-      <button class="btn acc" data-add="${p.id}">
-        Agregar
-      </button>
-    `;
+      <div style="padding:12px">
+        <h4>${p.name}</h4>
+        <p>${p.desc}</p>
+        <p class="muted">⏱ Tiempo estimado de espera: ${p.tiempo} min</p>
+        <p class="muted">Stock disponible: ${p.stock}</p>
+        <p class="price"><h4>${fmt(p.price)}</h4></p>
 
+        <div class="row" style="gap:6px">
+          <button class="btn acc" data-add="${p.id}" ${p.stock <= 0 ? "disabled" : ""}> 
+            ${p.stock > 0 ? "Agregar" : "Sin stock"}
+          </button>
+
+          <button class="btn ghost" data-review="${p.id}">
+            Reseñas
+          </button>
+        
+        </div>
+      </div>
+    `;
     wrap.appendChild(card);
   });
 
-    wrap.onclick = (e) => {
+  wrap.onclick = (e) => {
+
+    // 🔥 VER RESEÑAS
+    const reviewBtn = e.target.closest('[data-review]');
+    if (reviewBtn) {
+      const idPlatillo = reviewBtn.dataset.review;
+      abrirModalReseñas(idPlatillo);
+      return;
+    }
+
+    // 🔒 Agregar al carrito
     if (!isLogged) {
       alert("Debes iniciar sesión para agregar productos");
       return;
@@ -514,12 +703,22 @@ function renderMenu() {
 
     if (prod) agregarAlCarrito(prod);
   };
+
 }
 
 function agregarAlCarrito(producto) {
+  if (producto.stock <= 0) {
+    alert("❌ No hay stock disponible");
+    return;
+  }
+
   const item = state.cart.find(p => p.id === producto.id);
 
   if (item) {
+    if (item.qty >= producto.stock) {
+      alert("⚠️ No hay más stock");
+      return;
+    }
     item.qty++;
   } else {
     state.cart.push({
@@ -533,19 +732,20 @@ function agregarAlCarrito(producto) {
   renderCart();
 }
 
+
 function renderCart() {
   const list = document.getElementById('cartList');
   const totalEl = document.getElementById('cartTotal');
-  const btn = document.getElementById('checkoutBtn');
+  const btnCheckout = document.getElementById('checkoutBtn');
 
   if (!state.cart.length) {
-    list.textContent = 'Tu carrito está vacío';
+    list.innerHTML = '<span class="muted">Tu carrito está vacío</span>';
     totalEl.textContent = fmt(0);
-    if (btn) btn.style.display = 'none';
+    if (btnCheckout) btnCheckout.style.display = 'none';
     return;
   }
 
-  if (btn) btn.style.display = 'block';
+  if (btnCheckout) btnCheckout.style.display = 'block';
 
   list.innerHTML = '';
 
@@ -553,18 +753,73 @@ function renderCart() {
     const row = document.createElement('div');
     row.className = 'row';
     row.style.justifyContent = 'space-between';
+    row.style.alignItems = 'center';
+    row.style.marginBottom = '6px';
 
     row.innerHTML = `
-      <span>${item.name} × ${item.qty}</span>
+      <div>
+        <strong>${item.name}</strong>
+        <div class="muted">${fmt(item.price)}</div>
+      </div>
+
+      <div class="row" style="gap:6px; align-items:center">
+        <button class="btn ghost qty-btn" data-dec="${item.id}">−</button>
+        <strong>${item.qty}</strong>
+        <button class="btn ghost qty-btn" data-inc="${item.id}">+</button>
+      </div>
+
       <strong>${fmt(item.qty * item.price)}</strong>
     `;
 
     list.appendChild(row);
   });
 
-  const total = state.cart.reduce((s, i) => s + i.qty * i.price, 0);
+  const total = state.cart.reduce(
+    (sum, i) => sum + i.qty * i.price, 0
+  );
+  document.querySelector("#montoPagar strong").textContent =
+  `$${total.toFixed(2)}`;
+
   totalEl.textContent = fmt(total);
 }
+
+
+const page = document.body.dataset.page;
+if (page === 'menu') {
+  const cartList = document.getElementById('cartList').addEventListener('click', (e) => {
+  const incId = e.target.dataset.inc;
+  const decId = e.target.dataset.dec;
+
+  if (incId) {
+    const item = state.cart.find(p => p.id == incId);
+    if (item) item.qty++;
+    renderCart();
+  }
+
+  if (decId) {
+    const item = state.cart.find(p => p.id == decId);
+    if (!item) return;
+
+    item.qty--;
+
+    // ❌ si llega a 0 → eliminar del carrito
+    if (item.qty <= 0) {
+      state.cart = state.cart.filter(p => p.id != decId);
+    }
+
+    renderCart();
+  }
+});
+}
+
+onClick('clearCartBtn', () => {
+  if (!state.cart.length) return;
+  if (!confirm("¿Cancelar todos los productos del carrito?")) return;
+  state.cart = [];
+  renderCart();
+});
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const adminApp = document.getElementById('admin-app');
@@ -579,6 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
   adminApp.hidden = false;
   cargarPlatillosAdmin();
   cargarUsuariosAdmin();
+  renderUserFilters();
 });
 
 // Renderiza lista de platillos con opción a eliminar
@@ -590,8 +846,7 @@ function renderAdminMenuList() {
   container.innerHTML = ''; // limpio
   const panel = document.createElement('div');
   panel.className = 'card p';
-  panel.innerHTML = `
-    <h3>Administrar platillos</h3>` + (menu.length ? menu.map(m => {
+  panel.innerHTML =  (menu.length ? menu.map(m => {
       const estadoTexto = m.activo ? "Activo" : "Inactivo";      // ← CORREGIDO
       const btnEstado = m.activo ? "Deshabilitar" : "Habilitar"; // ← CORREGIDO
       const estadoColor = m.activo ? "green" : "red";            // ← CORREGIDO
@@ -854,14 +1109,19 @@ async function confirmarPedido() {
     return;
   }
 
+  abrirPagoModal();
+}
+
+async function enviarPedido(tipo_pago) {
+  cerrarPagoModal();
+
   try {
     const res = await fetch("/pedidosbd", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        items: state.cart   // 👈 enviamos el carrito
+        items: state.cart,
+        tipo_pago // 👈 CLAVE
       })
     });
 
@@ -874,11 +1134,10 @@ async function confirmarPedido() {
 
     alert("✅ Pedido confirmado correctamente");
 
-    // Limpiar carrito
+    // limpiar carrito
     state.cart = [];
     renderCart();
 
-    // Opcional: redirigir a pedidos
     window.location.href = "pedidos.html";
 
   } catch (err) {
@@ -889,12 +1148,13 @@ async function confirmarPedido() {
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("checkoutBtn");
-  if (btn) {
-    btn.addEventListener("click", confirmarPedido);
-  }
+
+document.getElementById("checkoutBtn")?.addEventListener("click", () => {
+  document.getElementById("EntregaModal").style.display = "grid";
 });
+
+
+
 
 function openEditDishModal(idPlatillo) {
   const menu = storage.get('menu', []);
@@ -908,7 +1168,9 @@ function openEditDishModal(idPlatillo) {
   document.getElementById("EditPlatilloId").value = platillo.id;
   document.getElementById("EditNombre").value = platillo.name;
   document.getElementById("EditPrecio").value = platillo.price;
+  document.getElementById("EditStock").value = platillo.stock;
   document.getElementById("EditDescripcion").value = platillo.desc || "";
+  document.getElementById("EditCategoria").value = platillo.categoria;
 
   document.getElementById("EditPlatilloModal").style.display = "grid";
 }
@@ -928,12 +1190,19 @@ if (guardarBtn) {
     const precio = document.getElementById("EditPrecio").value;
     const descripcion = document.getElementById("EditDescripcion").value;
     const imagen = document.getElementById("EditImagen").files[0];
-
+    const stock = document.getElementById("EditStock").value;
+    const categoria = document.getElementById("EditCategoria").value;
+    const tiempo = document.getElementById("EditTiempo").value;
+    
     const formData = new FormData();
+
     formData.append("id", id);
     formData.append("nombre", nombre);
     formData.append("precio", precio);
     formData.append("descripcion", descripcion);
+    formData.append("stock", stock);
+    formData.append("categoria", categoria);
+    formData.append("tiempo", tiempo);
 
     if (imagen) {
       formData.append("imagen", imagen);
@@ -971,6 +1240,1091 @@ if (guardarBtn) {
 
 
 
+async function abrirModalReseñas(idPlatillo) {
+  state.currentReview = idPlatillo;
+
+  const modal = document.getElementById("reviewModal");
+  const list = document.getElementById("reviewList");
+  const title = document.getElementById("modalTitle");
+
+  list.innerHTML = "Cargando reseñas...";
+  modal.style.display = "grid";
+
+  const input = document.getElementById("reviewInput");
+  const rating = document.getElementById("reviewRating");
+  const sendBtn = document.getElementById("sendReviewBtn");
+
+  // 🔒 Si NO ha iniciado sesión → solo lectura
+  if (!isLogged) {
+  input.value = "Inicia sesión para escribir una reseña";
+  input.disabled = true;
+  rating.disabled = true;
+
+  // 🔥 OCULTAR botón Enviar
+  sendBtn.style.display = "none";
+} else {
+  input.value = "";
+  input.disabled = false;
+  rating.disabled = false;
+
+  // 🔥 MOSTRAR botón Enviar
+  sendBtn.style.display = "inline-block";
+}
+
+
+  try {
+    const res = await fetch(`/resenas/${idPlatillo}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      list.innerHTML = "Error al cargar reseñas";
+      return;
+    }
+
+    title.textContent = `Reseñas (${data.total}) • ⭐ ${data.promedio}`;
+
+    if (!data.reseñas.length) {
+      list.innerHTML = "<p class='muted'>Aún no hay reseñas</p>";
+      return;
+    }
+
+    list.innerHTML = data.reseñas.map(r => `
+      <div class="card p" style="margin-bottom:8px">
+        <strong>${r.usuario}</strong>
+        <div>⭐ ${r.CALIFICACION}</div>
+        <p>${r.COMENTARIOS}</p>
+        <small class="muted">${new Date(r.FECHA).toLocaleString()}</small>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = "Error de conexión";
+  }
+}
+
+const sendReviewBtn = document.getElementById("sendReviewBtn");
+
+if (sendReviewBtn) {
+  sendReviewBtn.onclick = async () => {
+    if (!isLogged) {
+      alert("Debes iniciar sesión para escribir reseñas");
+      return;
+    }
+    if (!state.currentReview) return;
+
+    const texto = document.getElementById("reviewInput")?.value.trim();
+    const rating = document.getElementById("reviewRating")?.value;
+
+    if (!texto) {
+      alert("Escribe una reseña");
+      return;
+    }
+
+    try {
+      const res = await fetch("/resenas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ID_PLATILLO: state.currentReview,
+          CALIFICACION: rating,
+          COMENTARIOS: texto
+        })
+      });
+
+      const data = await res.json();
+      alert(data.mensaje);
+
+      if (data.ok) {
+        const input = document.getElementById("reviewInput");
+        if (input) input.value = "";
+        abrirModalReseñas(state.currentReview);
+      }
+
+    } catch (err) {
+      alert("Error al enviar reseña");
+    }
+  };
+}
+
+
+
+const closeReviewBtn = document.getElementById("closeReviewBtn");
+if (closeReviewBtn) {
+  closeReviewBtn.onclick = () => {
+    const modal = document.getElementById("reviewModal");
+    if (modal) modal.style.display = "none";
+    state.currentReview = null;
+  };
+}
+
+
+
+
+
+// ----------------- pedidos EMPLEADO ----------------
+
+function estadoTexto(st) {
+  return st === 'prep' ? 'En preparación'
+       : st === 'ready' ? 'Listo'
+       : st === 'done' ? 'Entregado'
+       : st;
+}
+
+function pagoTexto(o) {
+  if (o.TIPO_PAGO === 'tarjeta') {
+    return '💳 Cobrado';
+  }
+  if (o.TIPO_PAGO === 'efectivo') {
+    return `💵 Por cobrar: $${o.TOTAL}`;
+  }
+  return '—';
+}
+
+
+async function renderOrdersEmpleado() {
+  const wrap = document.getElementById('ordersGrid');
+  const statusGrid = document.getElementById('statusGrid');
+
+  // 🛑 SI NO ESTÁ EN EMPLEADO.HTML → SALIR
+  if (!wrap || !statusGrid) return;
+  
+  wrap.innerHTML = '';
+  statusGrid.style.display = 'none';
+
+  const res = await fetch('/empleado/getpedidos');
+  const data = await res.json();
+
+  if (!data.ok) {
+    wrap.innerHTML = '<div class="muted">Error cargando pedidos</div>';
+    return;
+  }
+
+  // AGRUPAR POR CLIENTE
+  const clientes = {};
+  data.pedidos.forEach(o => {
+    if (!clientes[o.ID_CUENTA]) {
+      clientes[o.ID_CUENTA] = {
+        nombre: o.NOMBRE_CLIENTE,
+        pedidos: []
+      };
+    }
+    clientes[o.ID_CUENTA].pedidos.push(o);
+  });
+
+  Object.entries(clientes).forEach(([idCliente, cliente]) => {
+    const card = document.createElement('div');
+    card.className = 'card p cliente-card';
+    card.dataset.id = idCliente;
+
+    card.innerHTML = `
+      <strong>${cliente.nombre}</strong>
+      <p class="muted">${cliente.pedidos.length} orden(es)</p>
+    `;
+
+    card.onclick = () => renderStatusGrid(cliente);
+
+    wrap.appendChild(card);
+  });
+}
+
+
+function renderStatusGrid(cliente) {
+  const grid = document.getElementById('statusGrid');
+  grid.innerHTML = '';
+  grid.style.display = 'block';
+
+  cliente.pedidos.forEach((o, index) => {
+    let lista = '';
+    o.platillos.forEach(p => {
+      lista += `<li>${p.NOMBRE_PLATILLO} × ${p.CANTIDAD}</li>`;
+    });
+
+    const card = document.createElement('div');
+    card.className = 'card p';
+
+    card.innerHTML = `
+      <h3>Orden ${index + 1} (#${o.ID_PEDIDO})</h3>
+
+      <p><strong>Estado:</strong> ${estadoTexto(o.ESTADO)}</p>
+      <p><strong>Pago:</strong> ${pagoTexto(o)}</p>
+
+      <ul>${lista}</ul>
+
+      <button 
+        class="boton-amarillo-block avanzar-btn"
+        data-id="${o.ID_PEDIDO}"
+        data-estado="${o.ESTADO}"
+        ${o.ESTADO === 'done' ? 'disabled' : ''}
+      >
+        ${o.ESTADO === 'prep'
+          ? '➡️ Marcar como Listo'
+          : o.ESTADO === 'ready'
+          ? '✅ Marcar como Entregado'
+          : '✔ Pedido Finalizado'}
+      </button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById('statusGrid')?.addEventListener('click', async e => {
+  const btn = e.target.closest('.avanzar-btn');
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const estadoActual = btn.dataset.estado;
+
+  let nuevoEstado = null;
+
+  if (estadoActual === 'prep') nuevoEstado = 'ready';
+  else if (estadoActual === 'ready') nuevoEstado = 'done';
+  else return;
+
+  try {
+    const res = await fetch('/empleado/actualizarestado', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id,
+        estado: nuevoEstado
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert("Error al actualizar estado");
+      return;
+    }
+
+    // 🔄 refrescar órdenes
+    renderOrdersEmpleado();
+
+  } catch (err) {
+    console.error(err);
+    alert("Error de conexión");
+  }
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const app = document.getElementById("vendedor-app");
+  if (!app) return; // evita que corra en otras páginas
+
+  const role = localStorage.getItem("userRole");
+
+  if (role && role.trim() === "Empleado") {
+    app.hidden = false;
+    renderOrdersEmpleado();
+  } else {
+    console.warn("Acceso denegado: rol no autorizado");
+    app.hidden = true;
+  }
+});
+
+function abrirPagoModal() {
+  const modal = document.getElementById("PagoModal");
+  modal.style.display = "flex";
+}
+
+
+function cerrarPagoModal() {
+  document.getElementById("PagoModal").style.display = "none";
+}
+
+window.addEventListener("click", e => {
+  const modal = document.getElementById("PagoModal");
+  if (e.target === modal) cerrarPagoModal();
+});
+
+
+// ======================== Forma de pafo =====================
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("checkoutBtn")?.addEventListener("click", confirmarPedido);
+
+  document.getElementById("PagoEfectivoBtn")?.addEventListener("click", async () => {
+    pedidoPago = "efectivo";
+    await finalizarPedido();
+  });
+
+
+
+  document.getElementById("PagoTarjetaBtn")?.addEventListener("click", async () => {
+    document.getElementById("PagoModal").style.display = "none";
+    document.getElementById("TarjetaModal").style.display = "grid";
+    cargarTarjetasPago();
+  });
+
+  document.getElementById("CerrarPagoModal")?.addEventListener("click", cerrarPagoModal);
+});
+
+
+const pagoTarjetaBtn = document.getElementById("PagoTarjetaBtn");
+if (pagoTarjetaBtn) {
+  pagoTarjetaBtn.addEventListener("click", () => {
+    cerrarPagoModal();
+    document.getElementById("TarjetaModal").style.display = "flex";
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const confirmarTarjetaBtn = document.getElementById("ConfirmarTarjetaBtn");
+  const cerrarTarjetaBtn = document.getElementById("CerrarTarjetaModal");
+
+  if (confirmarTarjetaBtn) {
+    confirmarTarjetaBtn.addEventListener("click", async () => {
+      const numero = document.getElementById("CardNumber")?.value.trim();
+      const nombre = document.getElementById("CardName")?.value.trim();
+      const exp = document.getElementById("CardExp")?.value.trim();
+
+      if (!numero || !nombre || !exp) {
+        alert("Completa todos los campos");
+        return;
+      }
+
+      try {
+        const res = await fetch("/perfil/tarjeta", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            titular: nombre,
+            numero: numero,
+            fecha: exp,
+            cvv: "000" // puedes cambiarlo luego
+          })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          alert("Error al guardar tarjeta");
+          return;
+        }
+
+        document.getElementById("TarjetaModal").style.display = "none";
+
+        // ✅ SOLO SI SE GUARDÓ BIEN
+        enviarPedido("tarjeta");
+
+      } catch (err) {
+        console.error(err);
+        alert("Error de conexión");
+      }
+    });
+  }
+
+  if (cerrarTarjetaBtn) {
+    cerrarTarjetaBtn.addEventListener("click", () => {
+      document.getElementById("TarjetaModal").style.display = "none";
+    });
+  }
+});
+
+
+
+const cerrarTarjetaBtn = document.getElementById("CerrarTarjetaModal");
+if (cerrarTarjetaBtn) {
+  cerrarTarjetaBtn.addEventListener("click", () => {
+    const modal = document.getElementById("TarjetaModal");
+    if (modal) modal.style.display = "none";
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    cargarKPIs();
+});
+
+function cargarKPIs() {
+    const ventasEl = document.getElementById('kpiVentas');
+    const pedidosEl = document.getElementById('kpiPedidos');
+    const ticketEl = document.getElementById('kpiTicket');
+    const menuEl = document.getElementById('kpiMenu');
+
+    // ⛔ Si NO estamos en admin.html, salimos
+    if (!ventasEl || !pedidosEl || !ticketEl || !menuEl) {
+        return;
+    }
+
+    fetch('/api/admin/kpis')
+        .then(res => res.json())
+        .then(data => {
+            ventasEl.innerText = `$${parseFloat(data.ventas).toFixed(2)}`;
+            pedidosEl.innerText = data.pedidos;
+            ticketEl.innerText = `$${parseFloat(data.ticket).toFixed(2)}`;
+            menuEl.innerText = data.menu;
+        })
+        .catch(err => {
+            console.error("Error cargando KPIs:", err);
+        });
+}
+
+
+const addDishBtn = document.getElementById("addDishBtn");
+
+if (addDishBtn) {
+  addDishBtn.onclick = async () => {
+    const nombre = document.getElementById("newName").value.trim();
+    const precio = document.getElementById("newPrice").value;
+    const descripcion = document.getElementById("newDesc").value.trim();
+    const imagen = document.getElementById("newImg").files[0];
+    const categoria = document.getElementById("newCategoria").value.trim();
+    const tiempo = document.getElementById("newTiempo").value.trim();
+    const stock = document.getElementById("newStock").value.trim();
+
+    if (!nombre || !precio || !descripcion || !categoria) {
+      alert("⚠️ Completa todos los campos");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("nombre", nombre);
+    formData.append("precio", precio);
+    formData.append("descripcion", descripcion);
+    formData.append("categoria", categoria);
+    formData.append("tiempo", tiempo);
+    formData.append("stock", stock);
+
+    if (imagen) {
+      formData.append("imagen", imagen);
+    }
+
+    try {
+      const res = await fetch("/platillos/agregar", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      alert(data.mensaje);
+
+      if (data.ok) {
+        // Limpiar inputs
+        document.getElementById("newName").value = "";
+        document.getElementById("newPrice").value = "";
+        document.getElementById("newDesc").value = "";
+        document.getElementById("newImg").value = "";
+        document.getElementById("newCategoria").value = "";
+        document.getElementById("newStock").value = "";
+        document.getElementById("newTiempo").value = "";
+
+        // 🔄 refrescar listas
+        await cargarPlatillosAdmin();
+        renderAdminMenuList();
+        await cargarPlatillos();
+        renderMenu();
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Error de conexión");
+    }
+  };
+}
+
+function renderCategorias() {
+  const menu = storage.get('menu', []);
+
+  const categorias = [
+    'Todos',
+    ...new Set(menu.map(p => p.categoria))
+  ];
+
+  const bar = document.getElementById('filterBar');
+  if (!bar) return;
+
+  bar.innerHTML = '';
+
+  categorias.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.textContent = cat;
+    btn.className = 'btn ghost';
+
+    btn.onclick = () => {
+      state.filter = cat;
+      renderMenu();
+    };
+
+    bar.appendChild(btn);
+  });
+}
+
+function renderUserFilters() {
+  const bar = document.getElementById('filterCuentas');
+  if (!bar) return;
+
+  const roles = ['Todos', 'Cliente', 'Empleado', 'Administrador'];
+
+  bar.innerHTML = roles.map(r => `
+    <button 
+      class="filter-btn ${userFilterState.role === r ? 'active' : ''}" 
+      data-role="${r}">
+      ${r}
+    </button>
+  `).join('');
+
+  bar.onclick = (e) => {
+    const btn = e.target.closest('[data-role]');
+    if (!btn) return;
+
+    userFilterState.role = btn.dataset.role;
+
+    renderUserFilters();
+
+    // 🔥 USAR LOS USUARIOS YA CARGADOS
+    const usuarios = storage.get('usuarios', []);
+    renderUsuariosAdmin(usuarios);
+  };
+}
+
+
+
+function cargarMenu(categoria = 'Todos') {
+  const url = categoria === 'Todos'
+    ? '/platillos'
+    : `/platillos?categoria=${encodeURIComponent(categoria)}`;
+
+  fetch(url)
+    .then(r => r.json())
+    .then(platillos => {
+      renderMenu(platillos);
+      renderCategorias(platillos);
+    });
+}
+
+if (document.body.dataset.page === 'menu') {
+  cargarMenu();
+}
+
+
+
+//=================== DIRECCION ========================================
+
+document.getElementById("addDirBtn")?.addEventListener("click", async () => {
+  const campos = [
+    newCalle,
+    newNumExt,
+    newNumInt,
+    newCol,
+    newCP,
+    newMun,
+    newCd,
+    newPais
+  ];
+
+  // ❌ Validación
+  if (campos.some(c => !c.value.trim())) {
+    alert("Completa todos los campos de la dirección");
+    return;
+  }
+
+  const data = {
+    calle: newCalle.value.trim(),
+    numExt: newNumExt.value.trim(),
+    numInt: newNumInt.value.trim(),
+    colonia: newCol.value.trim(),
+    cp: newCP.value.trim(),
+    municipio: newMun.value.trim(),
+    ciudad: newCd.value.trim(),
+    pais: newPais.value.trim()
+  };
+
+  const res = await fetch("/perfil/direccion", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  const r = await res.json();
+  if (!r.ok) {
+    alert("Error al guardar dirección");
+    return;
+  }
+
+  cargarDirecciones();
+});
+
+
+async function cargarDirecciones() {
+  const res = await fetch("/perfil/direcciones");
+  const dirs = await res.json();
+
+  DireccionGrid.innerHTML = dirs.map(d => `
+  <div class="card p">
+    <strong>${d.CALLE} ${d.NUM_EXT}</strong>
+    <p>${d.COLONIA}, ${d.CIUDAD}</p>
+    <small>${d.PAIS} • ${d.CP}</small>
+  </div>
+`).join("");
+
+}
+
+async function editarDireccion(id) {
+  const res = await fetch(`/perfil/direccion/${id}`);
+  const d = await res.json();
+
+  editDirId.value = d.ID_DIRECCION;
+  editCalle.value = d.CALLE;
+  editNumExt.value = d.NUM_EXT;
+  editNumInt.value = d.NUM_INT;
+  editCol.value = d.COLONIA;
+  editCP.value = d.CP;
+  editMun.value = d.MUNICIPIO;
+  editCd.value = d.CIUDAD;
+  editPais.value = d.PAIS;
+
+  document.getElementById("editDireccionModal").style.display = "grid";
+}
+
+async function guardarDireccionEditada() {
+  const data = {
+    calle: editCalle.value,
+    numExt: editNumExt.value,
+    numInt: editNumInt.value,
+    colonia: editCol.value,
+    cp: editCP.value,
+    municipio: editMun.value,
+    ciudad: editCd.value,
+    pais: editPais.value
+  };
+
+  const id = editDirId.value;
+
+  const res = await fetch(`/perfil/direccion/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  if ((await res.json()).ok) {
+    cerrarModalDir();
+    cargarDirecciones();
+  }
+}
+
+function cerrarModalDir() {
+  document.getElementById("editDireccionModal").style.display = "none";
+}
+
+
+
+
+//=================== TARJETA ========================================
+
+document.getElementById("addTarjBtn")?.addEventListener("click", async () => {
+  const campos = [
+    newTitular,
+    newNumTarjeta,
+    newFechExp,
+    newCVV
+  ];
+
+  if (campos.some(c => !c.value.trim())) {
+    alert("Completa todos los campos de la tarjeta");
+    return;
+  }
+
+  const data = {
+    titular: newTitular.value.trim(),
+    numero: newNumTarjeta.value.trim(),
+    fecha: newFechExp.value.trim(),
+    cvv: newCVV.value.trim()
+  };
+
+  const res = await fetch("/perfil/tarjeta", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  const r = await res.json();
+  if (!r.ok) {
+    alert("Error al guardar tarjeta");
+    return;
+  }
+
+  cargarTarjetas();
+});
+
+
+async function cargarTarjetas() {
+  const res = await fetch("/perfil/tarjetas");
+  const tarjetas = await res.json();
+
+  TarjetaGrid.innerHTML = tarjetas.map(t => `
+  <div class="card p">
+    <strong>${t.TITULAR}</strong>
+    <p>**** **** **** ${t.NUM_TARJETA.slice(-4)}</p>
+    <small>Exp: ${t.FECHA_EXP}</small>
+
+    <button class="btn ghost" onclick="editarTarjeta(${t.ID_TARJETA})">
+      Editar
+    </button>
+  </div>
+`).join("");
+
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.getElementById("Perfil-app")) {
+    cargarDirecciones();
+    cargarTarjetas();
+    document.getElementById("Perfil-app").hidden = false;
+  }
+});
+
+async function editarTarjeta(id) {
+  const res = await fetch(`/perfil/tarjeta/${id}`);
+  const t = await res.json();
+
+  editTarjId.value = t.ID_TARJETA;
+  editTitular.value = t.TITULAR;
+  editNumTarjeta.value = t.NUM_TARJETA;
+  editFechaExp.value = t.FECHA_EXP;
+  editCVV.value = t.CVV;
+
+  document.getElementById("editTarjetaModal").style.display = "grid";
+}
+
+async function guardarTarjetaEditada() {
+  const id = editTarjId.value;
+
+  const data = {
+    titular: editTitular.value,
+    numero: editNumTarjeta.value,
+    fecha: editFechaExp.value,
+    cvv: editCVV.value
+  };
+
+  const res = await fetch(`/perfil/tarjeta/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  if ((await res.json()).ok) {
+    cerrarModalTarj();
+    cargarTarjetas();
+  }
+}
+
+function cerrarModalTarj() {
+  document.getElementById("editTarjetaModal").style.display = "none";
+}
+
+async function cargarTarjetasPago() {
+  const res = await fetch("/perfil/tarjetas");
+  const tarjetas = await res.json();
+
+  const cont = document.getElementById("TarjetasGuardadas");
+
+  if (!tarjetas.length) {
+    cont.innerHTML = `<p class="muted">No tienes tarjetas guardadas</p>`;
+    return;
+  }
+
+  cont.innerHTML = tarjetas.map(t => `
+    <div class="card p tarjeta-pago" onclick="seleccionarTarjetaPago('${t.NUM_TARJETA}','${t.TITULAR}','${t.FECHA_EXP}')">
+      <strong>${t.TITULAR}</strong>
+      <p>**** **** **** ${t.NUM_TARJETA.slice(-4)}</p>
+      <small>Exp: ${t.FECHA_EXP}</small>
+    </div>
+  `).join("");
+}
+
+
+
+function seleccionarTarjetaPago(numero, titular, exp) {
+  document.getElementById("CardNumber").value = numero;
+  document.getElementById("CardName").value = titular;
+  document.getElementById("CardExp").value = exp;
+}
+
+//======================== Confirmar Tarjetas BTN ==========================
+document.getElementById("ConfirmarTarjetaBtn")?.addEventListener("click", () => {
+  const numero = CardNumber.value;
+  const nombre = CardName.value;
+  const exp = CardExp.value;
+
+  if (!numero || !nombre || !exp) {
+    alert("Completa los datos de la tarjeta");
+    return;
+  }
+
+  // 👉 aquí conectas con tu lógica de crear pedido
+  console.log("Pago con tarjeta:", numero, nombre, exp);
+
+  document.getElementById("TarjetaModal").style.display = "none";
+  alert("Pago realizado con tarjeta 💳");
+});
+
+
+
+
+
+function continuarDespuesPago(tipoPago) {
+  window.tipoPagoSeleccionado = tipoPago;
+
+  document.getElementById("PagoModal").style.display = "none";
+  document.getElementById("TarjetaModal").style.display = "none";
+
+  document.getElementById("EntregaModal").style.display = "grid";
+}
+
+
+//=============== Recoger en Local ===================
+document.getElementById("RecogerLocalBtn")?.addEventListener("click", () => {
+  pedidoEntrega = "LOCAL";
+  pedidoDireccion = null;
+
+  document.getElementById("EntregaModal").style.display = "none";
+  document.getElementById("PagoModal").style.display = "grid";
+});
+
+
+// ================ Enviar a Domicilio ================
+document.getElementById("EnviarDomicilioBtn")?.addEventListener("click", async () => {
+  pedidoEntrega = "DOMICILIO";
+
+  document.getElementById("EntregaModal").style.display = "none";
+  document.getElementById("DireccionEnvioModal").style.display = "grid";
+
+  cargarDireccionesEnvio();
+});
+
+//=================== Cerrar Entrega ========================
+document.getElementById("CerrarEntregaModal")?.addEventListener("click", () => {
+    document.getElementById("EntregaModal").style.display = "none";
+  });
+
+
+//================== Direcciones de Envio ==============
+async function cargarDireccionesEnvio() {
+  const res = await fetch("/perfil/direcciones");
+  const dirs = await res.json();
+
+  const cont = document.getElementById("DireccionesEnvio");
+
+  cont.innerHTML = dirs.map(d => `
+    <div class="card p direccion-envio"
+      onclick="seleccionarDireccion(${d.ID_DIRECCION}, this)">
+      <strong>${d.CALLE} ${d.NUM_EXT}</strong>
+      <p>${d.COLONIA}, ${d.CIUDAD}</p>
+    </div>
+  `).join("");
+}
+
+
+
+//============== Seleccionar Direccion =====================0
+function seleccionarDireccion(id, el) {
+  pedidoDireccion = id;
+
+  document.querySelectorAll(".direccion-envio")
+    .forEach(d => d.classList.remove("selected"));
+
+  el.classList.add("selected");
+}
+
+
+// =========== Confirmar Envio ===============================000
+document.getElementById("ConfirmarEnvioBtn")?.addEventListener("click", () => {
+  if (!pedidoDireccion) {
+    alert("Selecciona una dirección");
+    return;
+  }
+
+  document.getElementById("DireccionEnvioModal").style.display = "none";
+  document.getElementById("PagoModal").style.display = "grid";
+});
+
+
+
+// ========================== Finalizar Pedido ==============================
+async function finalizarPedido() {
+  const res = await fetch("/pedido/finalizar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      total: calcularTotalCarrito(),
+      tipoPago: pedidoPago,
+      tipoEntrega: pedidoEntrega,
+      idDireccion: pedidoDireccion,
+      idTarjeta: pedidoTarjeta
+    })
+
+  });
+
+  const r = await res.json();
+  if (!r.ok) {
+    alert("Error al confirmar pedido");
+    return;
+  }
+
+  alert("Pedido confirmado ✅");
+  limpiarCarrito();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const checkoutBtn = document.getElementById("checkoutBtn");
+
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener("click", () => {
+      cerrarTodosLosModales();
+      document.getElementById("EntregaModal").style.display = "grid";
+    });
+  }
+
+});
+
+function cerrarTodosLosModales() {
+  document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+}
+
+function calcularTotalCarrito() {
+  return cartTotal;
+}
+
+function calcularTotalCarrito() {
+  const totalText = document.getElementById("cartTotal")?.innerText || "$0";
+  return parseFloat(totalText.replace("$", ""));
+}
+
+function limpiarCarrito() {
+  localStorage.removeItem("carrito");
+  location.reload();
+}
+
+async function cargarMisDatos() {
+  const grid = document.getElementById("MisDatosGrid");
+  if (!grid) return;
+
+  grid.innerHTML = "Cargando datos...";
+
+  try {
+    const res = await fetch("/mi-perfil");
+    const data = await res.json();
+
+    if (!data.ok) {
+      grid.innerHTML = "No se pudieron cargar tus datos";
+      return;
+    }
+
+    const { nombre, email, password } = data.usuario;
+
+    grid.innerHTML = `
+      <div class="card">
+        <h3>Mis datos</h3>
+
+        <p><strong>Nombre:</strong> ${nombre}</p>
+        <p><strong>Email:</strong> ${email}</p>
+      </div>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    grid.innerHTML = "Error al cargar datos";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.getElementById("MisDatosGrid")) {
+    cargarMisDatos();
+  }
+});
+
+async function cargarPlatilloTopMes() {
+  const contenedor = document.getElementById("PlatilloTopContenido");
+  if (!contenedor) return;
+
+  try {
+    const res = await fetch("/admin/platillo-top-mes");
+    const data = await res.json();
+
+    if (!data.ok || !data.platillo) {
+      contenedor.innerHTML = "No hay datos para este mes";
+      return;
+    }
+
+    const { NOMBRE, total_vendido, total_generado } = data.platillo;
+
+    contenedor.innerHTML = `
+      <p><strong>Platillo:</strong> ${NOMBRE}</p>
+      <p><strong>Pedidos:</strong> ${total_vendido}</p>
+      <p><strong>Total generado:</strong> $${Number(total_generado).toFixed(2)}</p>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    contenedor.innerHTML = "Error al cargar información";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (document.getElementById("PlatilloTopMes")) {
+    cargarPlatilloTopMes();
+  }
+});
+
+function activarBuscador(inputId, gridSelector) {
+  const input = document.getElementById(inputId);
+  const grid = document.querySelector(gridSelector);
+
+  if (!input || !grid) return;
+
+  input.addEventListener("input", () => {
+    const texto = input.value.toLowerCase();
+
+    grid.querySelectorAll(".card").forEach(card => {
+      const contenido = card.innerText.toLowerCase();
+      card.style.display = contenido.includes(texto) ? "" : "none";
+    });
+  });
+}
+
+activarBuscador("BuscadorMenu", "#menuGrid");
+activarBuscador("BuscadorAdminPlatillos", "#PlatillosGrid");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -979,8 +2333,12 @@ if (guardarBtn) {
 
 
 // ---------- UI bindings ---------- 
-$('#seedBtn').addEventListener('click', OpenInitSesion);
-$('#RegistrarBtn').addEventListener('click',OpenCrearCuenta);
+const seedBtn = $('#seedBtn');
+if (seedBtn) seedBtn.addEventListener('click', OpenInitSesion);
+
+const regBtn = $('#RegistrarBtn');
+if (regBtn) regBtn.addEventListener('click', OpenCrearCuenta);
+
 //$('#checkoutBtn').addEventListener('click', checkout);
 
 
