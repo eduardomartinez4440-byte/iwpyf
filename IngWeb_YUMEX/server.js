@@ -371,7 +371,7 @@ app.get('/platillos', (req, res) => {
 });
 
 
-// RUTA PARA OBTENER PLATILLOS
+// RUTA PARA OBTENER platillos
 app.get('/admin/platillos', (req, res) => {
   const sql = `
     SELECT ID_PLATILLO, NOMBRE, PRECIO, STOCK, ACTIVO
@@ -1044,15 +1044,15 @@ app.post("/guardar-tarjeta", (req, res) => {
 // KPIs del panel de administración
 app.get('/api/admin/kpis', (req, res) => {
 
-    const qVentas = `SELECT IFNULL(SUM(TOTAL),0) AS ventas FROM PEDIDOS`;
-    const qPedidos = `SELECT COUNT(*) AS pedidos FROM PEDIDOS`;
-    const qTicket = `SELECT IFNULL(AVG(TOTAL),0) AS ticket FROM PEDIDOS`;
-    const qMenu = `SELECT COUNT(*) AS menu FROM PLATILLOS`;
+    const qVentas = `SELECT IFNULL(SUM(TOTAL),0) AS ventas FROM pedidos`;
+    const qpedidos = `SELECT COUNT(*) AS pedidos FROM pedidos`;
+    const qTicket = `SELECT IFNULL(AVG(TOTAL),0) AS ticket FROM pedidos`;
+    const qMenu = `SELECT COUNT(*) AS menu FROM platillos`;
 
     db.query(qVentas, (err, ventasRes) => {
         if (err) return res.status(500).json(err);
 
-        db.query(qPedidos, (err, pedidosRes) => {
+        db.query(qpedidos, (err, pedidosRes) => {
             if (err) return res.status(500).json(err);
 
             db.query(qTicket, (err, ticketRes) => {
@@ -1318,9 +1318,9 @@ app.get("/admin/platillo-top-mes", verificarSesion, (req, res) => {
       p.NOMBRE,
       SUM(pd.CANTIDAD) AS total_vendido,
       SUM(pd.CANTIDAD * pd.PRECIO_UNITARIO) AS total_generado
-    FROM PEDIDOS pe
-    JOIN PEDIDO_DETALLE pd ON pe.ID_PEDIDO = pd.ID_PEDIDO
-    JOIN PLATILLOS p ON pd.ID_PLATILLO = p.ID_PLATILLO
+    FROM pedidos pe
+    JOIN pedido_detalle pd ON pe.ID_PEDIDO = pd.ID_PEDIDO
+    JOIN platillos p ON pd.ID_PLATILLO = p.ID_PLATILLO
     WHERE MONTH(pe.FECHA_COMPRA) = MONTH(CURRENT_DATE())
       AND YEAR(pe.FECHA_COMPRA) = YEAR(CURRENT_DATE())
     GROUP BY p.ID_PLATILLO

@@ -181,7 +181,7 @@ function activarSesion(usuario) {
   }
 
   if (usuario.rol === "cliente") {
-    document.getElementById("OptionMisPedidos").style.display = "block";
+    document.getElementById("OptionMispedidos").style.display = "block";
   }
 }
 
@@ -276,7 +276,7 @@ function renderOptionSesion() {
 // ============ CONTROL DE BOTONES POR ROL ============
 function renderRoleButtons() {
   const adminBtn = document.getElementById('OptionAdmin');
-  const pedidosBtn = document.getElementById('OptionMisPedidos');
+  const pedidosBtn = document.getElementById('OptionMispedidos');
   const empleadoBtn = document.getElementById('OptionEmpleado');
 
   if (adminBtn) adminBtn.style.display = 'none';
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (document.getElementById('menuGrid')) {
     console.log('✅ menuGrid existe');
     
-    await cargarPlatillos();
+    await cargarplatillos();
     
     // 🔍 DEBUG DE CATEGORÍAS (AQUÍ VA)
     console.log(
@@ -587,10 +587,10 @@ function renderClienteUI() {
 
 
 /* ================================
-   CARGAR PLATILLOS DESDE BACKEND
+   CARGAR platillos DESDE BACKEND
 ================================ */
 
-async function cargarPlatillosAdmin() {
+async function cargarplatillosAdmin() {
   const res = await fetch('/admin/platillos');
   const data = await res.json();
   storage.set('menu', data.map(p => ({
@@ -604,7 +604,7 @@ async function cargarPlatillosAdmin() {
   renderAdminMenuList();
 }
 
-async function cargarPlatillos() {
+async function cargarplatillos() {
   try {
     console.log('🌐 Cargando platillos...');
     const res = await fetch('/platillos');
@@ -670,7 +670,7 @@ function renderMenu() {
           </button>
 
           <button class="btn ghost" data-review="${p.id}">
-            Reseñas
+            reseñas
           </button>
         
         </div>
@@ -681,11 +681,11 @@ function renderMenu() {
 
   wrap.onclick = (e) => {
 
-    // 🔥 VER RESEÑAS
+    // 🔥 VER reseñas
     const reviewBtn = e.target.closest('[data-review]');
     if (reviewBtn) {
       const idPlatillo = reviewBtn.dataset.review;
-      abrirModalReseñas(idPlatillo);
+      abrirModalreseñas(idPlatillo);
       return;
     }
 
@@ -832,7 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   adminApp.hidden = false;
-  cargarPlatillosAdmin();
+  cargarplatillosAdmin();
   cargarUsuariosAdmin();
   renderUserFilters();
 });
@@ -925,13 +925,13 @@ if (toggleId) {
     }
 
     // 🔥 PASO 1: volver a cargar platillos desde BD
-    await cargarPlatillosAdmin();
+    await cargarplatillosAdmin();
 
     // 🔥 PASO 2: volver a renderizar panel admin
     renderAdminMenuList();
 
     // 🔥 PASO 3: volver a renderizar menú cliente
-    await cargarPlatillos();
+    await cargarplatillos();
     renderMenu();
 
   } catch (err) {
@@ -1224,9 +1224,9 @@ if (guardarBtn) {
       alert("Platillo actualizado");
 
       // 🔄 refrescar todo
-      await cargarPlatillosAdmin();
+      await cargarplatillosAdmin();
       renderAdminMenuList();
-      await cargarPlatillos();
+      await cargarplatillos();
       renderMenu();
 
       document.getElementById("EditPlatilloModal").style.display = "none";
@@ -1240,7 +1240,7 @@ if (guardarBtn) {
 
 
 
-async function abrirModalReseñas(idPlatillo) {
+async function abrirModalreseñas(idPlatillo) {
   state.currentReview = idPlatillo;
 
   const modal = document.getElementById("reviewModal");
@@ -1281,7 +1281,7 @@ async function abrirModalReseñas(idPlatillo) {
       return;
     }
 
-    title.textContent = `Reseñas (${data.total}) • ⭐ ${data.promedio}`;
+    title.textContent = `reseñas (${data.total}) • ⭐ ${data.promedio}`;
 
     if (!data.reseñas.length) {
       list.innerHTML = "<p class='muted'>Aún no hay reseñas</p>";
@@ -1338,7 +1338,7 @@ if (sendReviewBtn) {
       if (data.ok) {
         const input = document.getElementById("reviewInput");
         if (input) input.value = "";
-        abrirModalReseñas(state.currentReview);
+        abrirModalreseñas(state.currentReview);
       }
 
     } catch (err) {
@@ -1553,7 +1553,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("PagoTarjetaBtn")?.addEventListener("click", async () => {
     document.getElementById("PagoModal").style.display = "none";
     document.getElementById("TarjetaModal").style.display = "grid";
-    cargarTarjetasPago();
+    cargartarjetasPago();
   });
 
   document.getElementById("CerrarPagoModal")?.addEventListener("click", cerrarPagoModal);
@@ -1637,7 +1637,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function cargarKPIs() {
     const ventasEl = document.getElementById('kpiVentas');
-    const pedidosEl = document.getElementById('kpiPedidos');
+    const pedidosEl = document.getElementById('kpipedidos');
     const ticketEl = document.getElementById('kpiTicket');
     const menuEl = document.getElementById('kpiMenu');
 
@@ -1709,9 +1709,9 @@ if (addDishBtn) {
         document.getElementById("newTiempo").value = "";
 
         // 🔄 refrescar listas
-        await cargarPlatillosAdmin();
+        await cargarplatillosAdmin();
         renderAdminMenuList();
-        await cargarPlatillos();
+        await cargarplatillos();
         renderMenu();
       }
 
@@ -1750,7 +1750,7 @@ function renderCategorias() {
 }
 
 function renderUserFilters() {
-  const bar = document.getElementById('filterCuentas');
+  const bar = document.getElementById('filtercuentas');
   if (!bar) return;
 
   const roles = ['Todos', 'Cliente', 'Empleado', 'Administrador'];
@@ -1841,11 +1841,11 @@ document.getElementById("addDirBtn")?.addEventListener("click", async () => {
     return;
   }
 
-  cargarDirecciones();
+  cargardirecciones();
 });
 
 
-async function cargarDirecciones() {
+async function cargardirecciones() {
   const res = await fetch("/perfil/direcciones");
   const dirs = await res.json();
 
@@ -1898,7 +1898,7 @@ async function guardarDireccionEditada() {
 
   if ((await res.json()).ok) {
     cerrarModalDir();
-    cargarDirecciones();
+    cargardirecciones();
   }
 }
 
@@ -1943,11 +1943,11 @@ document.getElementById("addTarjBtn")?.addEventListener("click", async () => {
     return;
   }
 
-  cargarTarjetas();
+  cargartarjetas();
 });
 
 
-async function cargarTarjetas() {
+async function cargartarjetas() {
   const res = await fetch("/perfil/tarjetas");
   const tarjetas = await res.json();
 
@@ -1967,8 +1967,8 @@ async function cargarTarjetas() {
 
 document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("Perfil-app")) {
-    cargarDirecciones();
-    cargarTarjetas();
+    cargardirecciones();
+    cargartarjetas();
     document.getElementById("Perfil-app").hidden = false;
   }
 });
@@ -2004,7 +2004,7 @@ async function guardarTarjetaEditada() {
 
   if ((await res.json()).ok) {
     cerrarModalTarj();
-    cargarTarjetas();
+    cargartarjetas();
   }
 }
 
@@ -2012,11 +2012,11 @@ function cerrarModalTarj() {
   document.getElementById("editTarjetaModal").style.display = "none";
 }
 
-async function cargarTarjetasPago() {
+async function cargartarjetasPago() {
   const res = await fetch("/perfil/tarjetas");
   const tarjetas = await res.json();
 
-  const cont = document.getElementById("TarjetasGuardadas");
+  const cont = document.getElementById("tarjetasGuardadas");
 
   if (!tarjetas.length) {
     cont.innerHTML = `<p class="muted">No tienes tarjetas guardadas</p>`;
@@ -2040,7 +2040,7 @@ function seleccionarTarjetaPago(numero, titular, exp) {
   document.getElementById("CardExp").value = exp;
 }
 
-//======================== Confirmar Tarjetas BTN ==========================
+//======================== Confirmar tarjetas BTN ==========================
 document.getElementById("ConfirmarTarjetaBtn")?.addEventListener("click", () => {
   const numero = CardNumber.value;
   const nombre = CardName.value;
@@ -2089,7 +2089,7 @@ document.getElementById("EnviarDomicilioBtn")?.addEventListener("click", async (
   document.getElementById("EntregaModal").style.display = "none";
   document.getElementById("DireccionEnvioModal").style.display = "grid";
 
-  cargarDireccionesEnvio();
+  cargardireccionesEnvio();
 });
 
 //=================== Cerrar Entrega ========================
@@ -2098,12 +2098,12 @@ document.getElementById("CerrarEntregaModal")?.addEventListener("click", () => {
   });
 
 
-//================== Direcciones de Envio ==============
-async function cargarDireccionesEnvio() {
+//================== direcciones de Envio ==============
+async function cargardireccionesEnvio() {
   const res = await fetch("/perfil/direcciones");
   const dirs = await res.json();
 
-  const cont = document.getElementById("DireccionesEnvio");
+  const cont = document.getElementById("direccionesEnvio");
 
   cont.innerHTML = dirs.map(d => `
     <div class="card p direccion-envio"
@@ -2251,7 +2251,7 @@ async function cargarPlatilloTopMes() {
 
     contenedor.innerHTML = `
       <p><strong>Platillo:</strong> ${NOMBRE}</p>
-      <p><strong>Pedidos:</strong> ${total_vendido}</p>
+      <p><strong>pedidos:</strong> ${total_vendido}</p>
       <p><strong>Total generado:</strong> $${Number(total_generado).toFixed(2)}</p>
     `;
 
@@ -2284,7 +2284,7 @@ function activarBuscador(inputId, gridSelector) {
 }
 
 activarBuscador("BuscadorMenu", "#menuGrid");
-activarBuscador("BuscadorAdminPlatillos", "#PlatillosGrid");
+activarBuscador("BuscadorAdminplatillos", "#platillosGrid");
 
 
 
